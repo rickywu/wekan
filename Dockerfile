@@ -1,5 +1,5 @@
 FROM ubuntu:cosmic
-LABEL maintainer="wekan"
+LABEL maintainer="ricky"
 
 # Declare Arguments
 ARG DEBUG
