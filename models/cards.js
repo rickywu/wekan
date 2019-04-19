@@ -504,6 +504,7 @@ Cards.helpers({
           }
         }
       }
+      definition.name=definition.name.substring(definition.name.indexOf('.')+1)
       return {
         _id: customField._id,
         value: customField.value,

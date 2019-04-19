@@ -121,7 +121,7 @@ Template.boardMenuPopup.events({
     }
     function getcont(data, name) {
       let dataFilter = [], custom = [];
-      custom = customFields.filter(item => item.name == name);
+      custom = customFields.filter(item => item.name.substring(item.name.indexOf('.')+1) == name);
       if (custom.length > 0) {
         dataFilter = data.filter(item => item._id == custom[0]._id)
       }

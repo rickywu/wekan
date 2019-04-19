@@ -81,24 +81,8 @@ template(name="cardDetails")
         if canModifyCard
           a.card-label.add-label.js-add-labels(title="{{_ 'card-labels-title'}}")
             i.fa.fa-plus
-
-    .card-details-items
-      each customFieldsWD
-        .card-details-item.card-details-item-customfield
-          h3.card-details-item-title
-            = definition.name
-          +cardCustomField
-
-    .card-details-items
-      if getSpentTime
-        .card-details-item.card-details-item-spent
-          if getIsOvertime
-            h3.card-details-item-title {{_ 'overtime-hours'}}
-          else
-            h3.card-details-item-title {{_ 'spent-time-hours'}}
-          +cardSpentTime
-
     //- XXX We should use "editable" to avoid repetiting ourselves
+
     if canModifyCard
       h3.card-details-item-title {{_ 'description'}}
       +inlinedCardDescription(classNames="card-description js-card-description")
@@ -124,6 +108,24 @@ template(name="cardDetails")
       h3.card-details-item-title {{_ 'description'}}
       +viewer
         = getDescription
+
+    .card-details-items
+      each customFieldsWD
+        .card-details-item.card-details-item-customfield
+          h3.card-details-item-title
+            = definition.name
+          +cardCustomField
+
+    .card-details-items
+      if getSpentTime
+        .card-details-item.card-details-item-spent
+          if getIsOvertime
+            h3.card-details-item-title {{_ 'overtime-hours'}}
+          else
+            h3.card-details-item-title {{_ 'spent-time-hours'}}
+          +cardSpentTime
+
+
 
     .card-details-items
       .card-details-item.card-details-item-name
