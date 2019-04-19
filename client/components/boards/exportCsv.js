@@ -224,11 +224,12 @@ Template.boardMenuPopup.events({
         var n = 0;
         for (var i in lscards) {
           if (lscards[i]["archived"] == false) {
+            console.info(lscards[i])
             n = n + 1;
             var jsons = {
               "序号": n,
               "工作名称": lscards[i]["title"],
-              "工作内容": lscards[i]["description"],
+              "工作内容": lscards[i]["description"]!=''&&lscards[i]["description"]!=null?lscards[i]["description"]:"未填写工作内容",
               "本周进度": getcont(lscards[i]["customFields"], "本周进度"),
               "下周计划": getcont(lscards[i]["customFields"], "下周计划"),
               "交付物": getcont(lscards[i]["customFields"], "交付物"),
