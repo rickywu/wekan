@@ -8,7 +8,9 @@ template(name="minicard")
     if labels
       .minicard-labels
         each labels
-          .minicard-label(class="card-label-{{color}}" title="{{name}}")
+          span.card-label(class="card-label-{{color}}" title=name)
+            +viewer
+              = name
     .minicard-title
       .handle
         .fa.fa-arrows
@@ -58,7 +60,8 @@ template(name="minicard")
           .minicard-custom-field
             if definition.showLabelOnMiniCard
               .minicard-custom-field-item
-                = definition.name
+                +viewer
+                  = definition.name
             .minicard-custom-field-item
               +viewer
                 = trueValue
@@ -73,7 +76,10 @@ template(name="minicard")
         if comments.count
           .badge(title="{{_ 'card-comments-title' comments.count }}")
             span.badge-icon.fa.fa-comment-o.badge-comment
-            span.badge-text= comments.count
+              = ' '
+              = comments.count
+            //span.badge-comment.badge-text
+            //|  {{_ 'comment'}}
       if getDescription
         .badge.badge-state-image-only(title=getDescription)
           span.badge-icon.fa.fa-align-left

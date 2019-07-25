@@ -1,9 +1,609 @@
+# v3.00 2019-07-25 Wekan release
+
+This release:
+
+- works with source, and docker-compose.yml at master branch.
+- Docker release uses Meteor 1.8.1 and MongoDB 4.0.10, so you need to backup your old MongoDB database and
+  restore with --noIndexRestore as described at https://github.com/wekan/wekan/wiki/Backup
+- Snap and Sandstorm builds are not fixed yet, see progress at https://github.com/wekan/wekan/issues/2533
+
+This release adds the following new features:
+
+- [Added label text to labels on minicard](https://github.com/wekan/wekan/commit/c48d5a73cab04db1a1e113e4367dc88573110438).
+  Thanks to xet7.
+- [Allow to shrink attached/pasted image](https://github.com/wekan/wekan/pull/2544).
+  Thanks to whowillcare.
+
+and fixes the following bugs:
+
+- [Fix invites](https://github.com/wekan/wekan/pull/2549).
+  Thanks to justinr1234.
+- [Makes LDAP background sync work. If the sync interval is unspecified, falls back to a hourly default](https://github.com/wekan/wekan/pull/2555).
+  Thanks to pshunter.
+- [Prevent isCommentOnly user adding attachments, editing list names, moving lists,
+  and seeing board settings menu. Show non-editable Custom Fields to isCommentOnly user](https://github.com/wekan/wekan/commit/a68c928896a94c377134f29a7183aa0b5a423720).
+  Thanks to xet7.
+- [Many](https://github.com/wekan/wekan/pull/2546) [Snap](https://github.com/wekan/wekan/pull/2552) [fixes](https://github.com/wekan/wekan/pull/2553).
+  In Progress. Thanks to justrinr1234.
+- [Fixed Dockerfile](https://github.com/wekan/wekan/commit/7df6f305c5cf41ac213623aeffaa7e48c981e0b6) and
+  [docker-compose.yml](https://github.com/wekan/wekan/commit/95698911f92ca728dbaab69406fd09bcbf81339d).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.99 2019-07-17 Wekan release
+
+This release adds the following new features:
+
+- [Add Corteza theme. In progress](https://github.com/wekan/wekan/commit/289e78dbd29cca9d97d3b5787c3368583d43b40f).
+  Thanks to xet7.
+- [Notify Due Days: System timelines will be showing any user modification for duat startat endat receivedat,
+  also notification to the watchers and if any card is due, about due or past due](https://github.com/wekan/wekan/pull/2536).
+  ENV variables: NOTIFY_DUE_DAYS_BEFORE_AND_AFTER (default is 2, if 0, will turn off notification for and dued cards),
+  NOTIFY_DUE_AT_HOUR_OF_DAY (any number between 0 - 23, standing for at what hour of a day that the notification will
+  be sent to the watchers). Also [bug fix for this, timeOldValue needs to set to "" in params when it's
+  not set](https://github.com/wekan/wekan/pull/2541).
+  Thanks to whowillcare.
+- [Notify Due Days: Add settings to Snap/Docker/Source. Rename env variables to NOTIFY_DUE_DAYS_BEFORE_AND_AFTER and
+  NOTIFY_DUE_AT_HOUR_OF_DAY](https://github.com/wekan/wekan/commit/5084cddf37ba16ce0855f8575c39f5e62d1b7f67).
+  Thanks to xet7.
+- [BIGEVENTS_PATTERN: When user being @ in comment, as long as it's not himself, a notification will be
+  sent out no matter this user is watching the board or not](https://github.com/wekan/wekan/pull/2541).
+  Introduced a system env var BIGEVENTS_PATTERN default as "due", so any activityType matches the pattern,
+  system will send out notifications to all board members no matter they are watching or tracking
+  the board or not. Owner of the Wekan server can disable the feature by setting this variable to "NONE"
+  or change the pattern to any valid regex. i.e. '|' delimited activityType names.
+  Thanks to whowillcare.
+- [Add BIGEVENTS_PATTERN to Source/Snap/Docker](https://github.com/wekan/wekan/commit/d7c09df7d2649bf2d2b61772c251f81793a6ed77).
+  Thanks to xet7.
+
+and adds the following updates:
+
+- [Update Meteor mongo package version](https://github.com/wekan/wekan/commit/96065d11a543852c1069cbab528bd08508b4a27c).
+  Thanks to xet7.
+- [Update dependencies](https://github.com/wekan/wekan/commit/d82c72f1c1df908e92045e5034fa12b33fc7f70c).
+  Thanks to xet7.
+
+and fixes the following bugs:
+
+- RELAX THEME: Use [only in this theme](https://github.com/wekan/wekan/commit/3ad6e554dceea822dee7390872260e872a792dcd)
+  the aggressive [red color and big bold serif font style
+  number](https://github.com/wekan/wekan/commit/bbc68309af0029f2bc4194db4c7e79689f888ea4#commitcomment-34216371) and
+  [card details text emphasis](https://github.com/wekan/wekan/commit/48ebc5f11745b125ce01d08d60e2d8e3a9419a5f#commitcomment-34268095)
+  Thanks to hever and xet7.
+- [Try to fix docker-compose.yml to use correct master branch that has
+  meteor 1.8.1](https://github.com/wekan/wekan/commit/202cc5a797b6269ec422c6f2e532a49f09d4e30a).
+  Thanks to xet7.
+- [Outgoing Webhooks setCustomField: Add board name, card name, custom field name to be
+  visible](https://github.com/wekan/wekan/commit/2003d90467debeadf51b69630c80ee6040524f52).
+  Still missing: custom field value, list name, swimlane name.
+  Thanks to xet7.
+- [Don't remove boardoverlay when mouse leaves carddetails](https://github.com/wekan/wekan/pull/2540).
+  This reduces Wekan board flashiness.
+  Thanks to newhinton.
+- [Limit the board list to 2 or 1 for mobile clients](https://github.com/wekan/wekan/pull/2542).
+  As a mobile user, the board size of in the home page too small, so the user is easily to
+  click on archive or copy button by accident. Increase the board size to 50% for pixel
+  greater than 360 and lesser than 800 and height to 8rem, 100% for any screen is even smaller.
+  This will reduce the accident much more.
+  Thanks to whowillcare.
+- [Add check for board member isActive](https://github.com/wekan/wekan/commit fe42eb1d014c06dfed8114a00b29eac9b08baec6).
+  Thanks to xet7.
+
+and has the following features in progress, not anything visible yet:
+
+- [Teams/Organizations: Add beginnings of database structure](https://github.com/wekan/wekan/issues/802#issuecomment-505986270).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.98 2019-07-02 Wekan release
+
+This release adds the following new features, thanks to xet7:
+
+- [Add Wekan v2.95-v2.97 master branch features and fixes to meteor-1.8 branch](https://github.com/wekan/wekan/commit/34b2168d0dda253dedabbee47031873efa4ae446).
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.97 2019-07-01 Wekan release
+
+This release [adds the following new features](https://github.com/wekan/wekan/commit/3e8cb8c6e1617ef03ebce045d3b93aeb2cf91228), thanks to xet7:
+
+- Add background color names to background colors.
+- Add new background colors: moderatepink, strongcyan, limegreen.
+- Add new background colors with themes: dark, relax.
+
+Note: Due Date etc on cards is visible on all background colors and themes. Hiding is not implemented yet.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.96 2019-07-01 Wekan release
+
+This release removes the following features, that were added at Wekan v2.95:
+
+- [Remove RELAX MODE and DARK MODE](https://github.com/wekan/wekan/commit/8477e94f3b8f531a4209f49758200009d274c1cf),
+  because [they changed look of all existing boards](https://github.com/wekan/wekan/issues/1149#issuecomment-507255114).
+  At some later Wekan release they will be added back as separate themes
+  that can be selected, without changing existing boards.
+  Thanks to chirrut2 and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.95 2019-07-01 Wekan release
+
+This release adds the following new features, thanks to xet7:
+
+- [Make list header add card + button more black, to make it more visible](https://github.com/wekan/wekan/commit/b260d05a8b2f87c29dd998d42103d1220b20cc08).
+- [On minicard, make comment icon and number of comments have red color
+  on white rounded background, so it is more visible when there is comments on card](https://github.com/wekan/wekan/commit/bbc68309af0029f2bc4194db4c7e79689f888ea4).
+- [Make card description text more visible with black borders and more white text area](https://github.com/wekan/wekan/commit/48ebc5f11745b125ce01d08d60e2d8e3a9419a5f).
+
+and adds the following [themes to board background colors](https://github.com/wekan/wekan/commit/c04292e98832e3aa7952e8a7858d47a853f40aad), thanks to xet7:
+
+- RELAX MODE, so when green background selected, list background is light green.
+- [DARK MODE](https://github.com/wekan/wekan/issues/1149), when dark backgroud color selected. Please test and send color visibility fixes as pull requests.
+- In RELAX MODE and DARK MODE, [hide card fields: received, start, due, end, members, requested, assigned](https://github.com/wekan/wekan/commit/b42ecb7948ad194433dc4460305174965106a751).
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.94 2019-06-29 Wekan release
+
+This release adds the following updates:
+
+- [Prettier & eslint project style update](https://github.com/wekan/wekan/pull/2520).
+  Thanks to justinr1234.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.93 2019-06-28 Wekan release
+
+This release fixes the following bugs:
+
+- [LDAP: Check if email attribute is an array, that has many email addresses](https://github.com/wekan/wekan/pull/2519).
+  Thanks to tdemaret and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.92 2019-06-27 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix Outgoing Webhook messages for Checlists, Checklist Items, Card comments, Add/Remove CustomField to board](https://github.com/wekan/wekan/commit/5283ba9ebbedf11540ffef1d4d87891c5ce9efc7).
+  Not yet fixed is Outgoing Webhook message about setting CustomField value.
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.91 2019-06-27 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix Attachment Outgoing Webhook missing list and swimlane name](https://github.com/wekan/wekan/commit/6a2f120d00b5ce9089ad2e12d01edb1ed9f94800).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.90 2019-06-21 Wekan release
+
+This release reverts the following Sandstorm changes:
+
+- [Revert v2.89 setting every Sandstorm Wekan user as admin](https://github.com/wekan/wekan/commit/e5c0d0ea18fe74a47afdfe101160280854e2c74f).
+  Thanks to xet7. [Related #2405](https://github.com/wekan/wekan/issues/2405).
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.89 2019-06-21 Wekan release
+
+This release adds the following Sandstorm features:
+
+- [Sandstorm Wekan: Set everyone as Admin](https://github.com/wekan/wekan/commit/60d62a6ae3a79059e68b2cd1d554d67b7d50b6aa).
+  Please test does this help with [Problem with the user management: can't add users or give wekan admin rights](https://github.com/wekan/wekan/issues/2405).
+  Thanks to xet7.
+- [If board does not exist, redirect to All Boards page, at all Wekan platforms](https://github.com/wekan/wekan/commit/4f46adc389126597266d71110f9754841f86857c).
+  So now at Sandstorm when loading Wekan grain, if first Sandstorm board is found,
+  it is opened. If first Sandstorm board is not found (it's deleted or archived),
+  then redirect automatically to All Boards page. [Closes #3132](https://github.com/wekan/wekan/issues/3132).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.88 2019-06-21 Wekan release
+
+This release adds the following updates:
+
+- Update translations.
+
+Thanks to translators for their translations.
+
+# v2.87 2019-06-21 Wekan release
+
+This release adds the following new features:
+
+- [Rule cardAction - SetDate](https://github.com/wekan/wekan/pull/2506).
+  Thanks to road42.
+
+and fixes the following bugs:
+
+- [Fix Move card to top/bottom of list](https://github.com/wekan/wekan/pull/2508).
+  Thanks to road42.
+- [Translation fixes](https://github.com/wekan/wekan/pull/2507).
+  Thanks to road42.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.86 2019-06-19 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix Wekan unable to Select Text from Description edit box](https://github.com/wekan/wekan/issues/2451)
+  by removing feature of card description submit on click outside. This is because when selecting text
+  and dragging up did trigger submit of description, so description was closed and selecting text failed.
+  This did affect all Chromium-based browsers: Chrome, Chromium, Chromium Edge.
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.85 2019-06-19 Wekan release
+
+This release fixes the following bugs:
+
+- [Fixed bug: rule doesn't move card to top/bottom](https://github.com/wekan/wekan/pull/2502).
+  Thanks to road42.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.84 2019-06-18 Wekan release
+
+This release fixes the following bugs:
+
+- [Buttons for adding rules to a board where missing for isBoardAdmin](https://github.com/wekan/wekan/pull/2500).
+  Thanks to road42.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.83 2019-06-17 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix Bug: Unable to click board submenu on mobile](https://github.com/wekan/wekan/commit/7ff6f24a90374ae95edbb87b37e0c235e7aee434).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.82 2019-06-14 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix OIDC Docker login. Empty string results to empty array at wekan/server/authentication.js](https://github.com/wekan/wekan/commit/bddbaa7bc2f3cfe8553a2265e168231ab51876f3).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.81 2019-06-13 Wekan release
+
+This release fixes the following bugs:
+
+- [Change OAuth2 whitelist default to empty string at snap, so it would be used as array on
+  wekan/server/authentication.js](https://github.com/wekan/wekan/commit/4334fbbb9dacf45b0262019526a9697b015049a1).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.80 2019-06-13 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix OAuth2 typos in snap-src/bin/config](https://github.com/wekan/wekan/commit/44dbd462b19e613fcb47161d44e4046d5d91a319).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.79 2019-06-13 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix OAuth2 typos in Dockerfile and docker-compose.yml](https://github.com/wekan/wekan/pull/2488).
+  Thanks to DominikPf.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.78 2019-06-12 Wekan release
+
+This release fixes the following bugs:
+
+- [Try to fix OIDC login](https://github.com/wekan/wekan/commit/8b31c0768c34fc4557b54cec936a0b4288a8e722).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.77 2019-06-11 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix Snap build](https://github.com/wekan/wekan/commit/e1e20275a673d3065c6cf239db8d2f1a505baa69).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.76 2019-06-11 Wekan release
+
+This release adds the following new features:
+
+- [Add support for CORS headers "Access-control-allow-headers" and
+  "Access-control-expose-headers"](https://github.com/wekan/wekan/pull/2429).
+  Thanks to risacher and xet7.
+- [Support scopes in OAuth2, so that Authentication via OAuth2 with Google is now possible](https://github.com/wekan/wekan/pull/2483).
+  Thanks to moserben16.
+
+and fixes the following bugs:
+
+- [Fix Scope parsing Issue for OAuth2 Login with simple String](https://github.com/wekan/wekan/pulls/2427).
+  Thanks to DominikPf.
+- [Show attachment name in Outgoing Webhook when attachment is added to card](https://github.com/wekan/wekan/commit/992ecfefa2e46ee7321ec9b8bfc3400532e5645e).
+  Thanks to xet7. Related [#2285](https://github.com/wekan/wekan/issues/2285).
+- [Show attachment name in Outgoing Webhook when attachment is removed from card](https://github.com/wekan/wekan/commit/23ccb3b991be6d7196e59f7d68df17b8949df049).
+  Thanks to xet7. Related [#2285](https://github.com/wekan/wekan/issues/2285).
+- [Allow BoardAdmin to create board rules](https://github.com/wekan/wekan/pull/2433).
+  Thanks to road42.
+- [Fix typo](https://github.com/wekan/wekan/pull/2442).
+  Thanks to Jason-Cooke.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.75 2019-05-22 Wekan release
+
+This release adds the following new features:
+
+- [CAS allowed LDAP groups](https://github.com/wekan/meteor-accounts-cas/pull/4).
+  Thanks to ppoulard. Please test. Related [#2356](https://github.com/wekan/wekan/issues/2356).
+
+and fixes the following bugs:
+
+- [Fix](https://github.com/wekan/wekan/commit/634df8f6f26a7a7a2df6f87a705d322d88638425):
+  [OAuth2 Requested Scopes are wrong / cannot be configured](https://github.com/wekan/wekan/issues/2412).
+  Thanks to DominikPf and xet7. Please test.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.74 2019-05-14 Wekan release
+
+This release fixes the following bugs:
+
+- Add missing [wekan-ldap#40](https://github.com/wekan/wekan-ldap/pull/40) code about
+  [LDAP_SYNC_ADMIN_STATUS](https://github.com/wekan/wekan/commit/0fe40ad9ec82ef2045578f4cc1e2ebb6cc80d47a).
+  Thanks to JulianJacobi, n-st, chirrut2 and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.73 2019-05-14 Wekan release
+
+This release fixes the following bugs with Apache I-CLA:
+
+- [Card count placement and export API functionality back](https://github.com/wekan/wekan/pulls/2406).
+  Thanks to bentiss.
+- [Few fixes for Dockerfile](https://github.com/wekan/wekan/pulls/2407).
+  Thanks to bentiss.
+
+and fixes the following bugs:
+
+- Fixed [#2338](https://github.com/wekan/wekan/issues/2338) -> [Slow opening of big boards with too many archived items](https://github.com/wekan/wekan/pull/2402).
+  If some Wekan users see errors with this, please empty your browser cache.
+  Thanks to nerminator.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.72 2019-05-13 Wekan release
+
+This release adds the following new features:
+
+- [Added BIDI support to "Add Card"](https://github.com/wekan/wekan/pull/2401).
+  Related [#884](https://github.com/wekan/wekan/issues/884).
+  Thanks to guyzyl.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.71 2019-05-12 Wekan release
+
+This release adds the following new features:
+
+- [Add partentId support on card web API](https://github.com/wekan/wekan/pulls/2400).
+  Thanks to atilaromero.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.70 2019-05-11 Wekan release
+
+This release adds the following new features:
+
+- [View markdown on List names, Custom Fields (Text and Dropdown), Label names,
+  All Boards view Board names and Board descriptions](https://github.com/wekan/wekan/commit/b795115042c2eb6bccbf029f21d78849a44128ca).
+  Related [#2334](https://github.com/wekan/wekan/issues/2334).
+  Thanks to shaygover and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.69 2019-05-11 Wekan release
+
+This release fixes the following translation names:
+
+- [Fix translation name in Wekan menu: oc to Occitan](https://github.com/wekan/wekan/commit/db40ca25ac5df17fcc8b7c93f12b7e2bffc349d2).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.68 2019-05-10 Wekan release
+
+This release adds the following new features:
+
+- [Option to login to the LDAP server with the user's own username and password, instead of an administrator
+  key](https://github.com/wekan/wekan/pull/2399). Default: false (use administrator key).
+  With new setting: LDAP_USER_AUTHENTICATION=true.
+  Thanks to thiagofernando.
+- [Added above new LDAP_USER_AUTHENTION=true option to Snap, Docker and Source settings](https://github.com/wekan/wekan/commit/3bbc805ee42e3c1638b50260d3fafc2b5f936923).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.67 2019-05-10 Wekan release
+
+This release adds the following new features:
+
+- [Move board to Archive button at each board at All Boards page](https://github.com/wekan/wekan/commit/828f6ea321020eda77fea399df52889e2081dfac).
+  Thanks to xet7. Related [#2389](https://github.com/wekan/wekan/issues/2389).
+- [If adding Subtasks does not work on old board, added wiki page how to make it work again](https://github.com/wekan/wekan/wiki/Subtasks).
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.66 2019-05-09 Wekan release
+
+This release adds the following new features:
+
+- [Delete user feature](https://github.com/wekan/wekan/pull/2384).
+  Thanks to Akuket.
+- Change to Delete user feature: [When last board admin is removed, board is not deleted, other board users can
+  still use it](https://github.com/wekan/wekan/commit/e1b016cf3d4ff93e9e0fe1feb96372e3e1625233).
+  Thanks to xet7.
+
+and adds the following new translations:
+
+- Add Chinese (Hong Kong).
+  Thanks to translators.
+
+and fixes the following bugs:
+
+- [Fix OIDC login](https://github.com/wekan/wekan/pull/2385). Related [#2383](https://github.com/wekan/wekan/issues/2383).
+  Thanks to faust64.
+- [Fix missing profile checks](https://github.com/wekan/wekan/pull/2396).
+  Thanks to justinr1234.
+- [Fix RTL issue #884, part 1](https://github.com/wekan/wekan/pull/2395).
+  Thanks to guyzyl.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.65 2019-04-24 Wekan release
+
+This release adds the following new features:
+
+- [Now a loading animation is displayed when the authentication is performed. This allows users
+  to know that it's in progress](https://github.com/wekan/wekan/pull/2379).
+  Thanks to Akuket.
+
+and removes the following UI duplicates:
+
+- [Remove from card menu, because they also exist at card:
+  members, labels, attachments, dates received/start/due/end](https://github.com/wekan/wekan/issues/2242).
+  Thanks to sfahrenholz, jrsupplee and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.64 2019-04-23 Wekan release
+
+This release adds the following new features:
+
+- [Board Archive: Restore All/Delete All of Cards/Lists/Swimlanes](https://github.com/wekan/wekan/pull/2376).
+  Thanks to Akuket.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.63 2019-04-23 Wekan release
+
+This release removes the following Caddy plugins:
+
+- [Remove Caddy plugins http.filter, http.ipfilter and http.realip from Caddy](https://github.com/wekan/wekan/commot/6a94500170509d2d82bd9a0fdc94a7ce66215b3d)
+  because they are currently broken, preventing download of Caddy during Wekan Snap build.
+  Thanks to xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.62 2019-04-23 Wekan release
+
+This release fixes the following bugs:
+
+- [Mobile UI: Center cards in list view](https://github.com/wekan/wekan/issues/2371).
+  Thanks to hupptechnologies.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.61 2019-04-20 Wekan release
+
+This release adds the following new features:
+
+- Admin Panel/People: Can now search users by username, full name or email and using regex to find them.
+  Display the number of users. All registered users by default else the number of users selected by the search.
+  Thanks to Akuket.
+
+and adds the following updates:
+
+- [Update to use newest GitHub flawored markdown](https://github.com/wekan/wekan/commit/fea2ad3d7d09b44c3de1dbcdd3f8750aaa6776d5),
+  because [it was found old version was in use](https://github.com/wekan/wekan/issues/2334).
+  Thanks to shaygover and xet7.
+- [Upgrade to Node 8.16.0](https://github.com/wekan/wekan/commit/6117097a93bfb11c8bd4c87a23c44a50e22ceb87).
+  Thanks to Node developers and xet7.
+- [Upgrade Docker base image to ubuntu:disco](https://github.com/wekan/wekan/commit/bd14ee3b1f450ddc6dec26ccc8da702b839942e5).
+  Thanks to Ubuntu developers and xet7.
+
+and fixes the following bugs:
+
+- [Fix Full width of lists and space before first list](https://github.com/wekan/wekan/pull/2343).
+  Thanks to hupptechnologies.
+- Remove [extra](https://github.com/wekan/wekan/pull/2332) [quotes](https://github.com/wekan/wekan/pull/2333) from docker-compose.yml.
+  Thanks to hibare.
+- Fix Docker builds by moving all separately cloned wekan/packages/* repos like ldap, oidc, etc code to wekan repo code,
+  so that in build scripts it's not needed to clone those. Also archived those wekan repos and moved issues
+  to https://github.com/wekan/wekan/issues because changes and development to those packages now happends on wekan/wekan repo.
+  There was also fixes to repo urls etc. Thanks to xet7.
+- [Additional updates](https://github.com/wekan/wekan/pull/2347) to meteor-1.8 branch, that contains
+  Meteor 1.8.1 version that works in Docker but not yet at Snap and Sandstorm. Thanks to justinr1234.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.60 2019-04-08 Wekan release
+
+This release fixes the following bugs:
+
+- [Fix: Description of Board is out of visible after Feature "Duplicate Board"](https://github.com/wekan/wekan/issues/2324).
+  Thanks to sfahrenholz and xet7.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.59 2019-04-06 Wekan release
+
+This release fixes the following bugs:
+
+- [Add variables for activity notifications, Fixes #2285](https://github.com/wekan/wekan/pull/2320).
+  Thanks to rinnaz.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v2.58 2019-04-06 Wekan release
+
+This release adds the following new features:
+
+- [Duplicate Board](https://github.com/wekan/wekan/issues/2257). Related #2225.
+  Thanks to Angtrim.
+- [Add Duplicate Board tooltip, and remove adding text "Copy" to duplicated board](https://github.com/wekan/wekan/commit/0f15b6d1982c383f76e8411cb501ff27e8febd42).
+  Thanks to xet7.
+
+and fixes the following bugs:
+
+- [Add proper variables for unjoin card](https://github.com/wekan/wekan/pull/2313).
+  Thanks to chotaire.
+- [Center reduce left margin in card view on mobile browser](https://github.com/wekan/wekan/pull/2314).
+  Thanks to hupptechnologies.
+- [Remove not needed ARGS from Dockerfile to reduce amount of Docker layers](https://github.com/wekan/wekan/issues/2301).
+  Thanks to folhabranca and xet7.
+- [Fix Swimlane Rules don't work](https://github.com/wekan/wekan/issues/2225).
+  Thanks to Angtrim.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
 # v2.57 2019-04-02 Wekan release
 
 This release fixes the following bugs, thanks to justinr1234:
 
 - [Add proper variables for join card](https://github.com/wekan/wekan/commit/289f1fe1340c85eb2af19825f4972e9057a86b7a),
-  fixes [Incorrect variable replacement on email notifications](https://github.com/wekan/wekan/issues/2295).
+  fixes [Incorrect variable replacement on email notifications](https://github.com/wekan/wekan/issues/2285).
 
 and fixes the following bugs with Apache I-CLA, thanks to bentiss:
 
@@ -38,7 +638,7 @@ Thanks to above GitHub users for their contributions and translators for their t
 
 This release fixes the following bugs:
 
-- Fix typos.                              
+- Fix typos.
 - [Fix Outgoing Webhook message about created new swimlane](https://github.com/wekan/wekan/issues/1969).
 
 Thanks to above GitHub users for their contributions and translators for their translations.
@@ -71,7 +671,7 @@ and fixes the following bugs:
 
 - [Fix IFTTT email sending](https://github.com/wekan/wekan/pull/2279).
   Thanks to justinr1234.
-    
+
 Thanks to above GitHub users for their contributions.
 
 # v2.51 2019-03-21 Wekan release
@@ -192,7 +792,7 @@ and reverts the following change of v2.42, because they did not fix anything, th
 
 - [Revert: Tried to fix snap mongodb-control not starting database](https://github.com/wekan/wekan/commit/4055f451fdadfbfdef9a10be29a0eb6aed91182c).
 
-Thanks to above GitHub users for their contributions, and translators for their translations.  
+Thanks to above GitHub users for their contributions, and translators for their translations.
 
 # v2.42 2019-03-07 Wekan release
 
@@ -231,7 +831,7 @@ This release fixes the following bugs:
 - [Fix](https://github.com/wekan/wekan/commit/e845fe3e7130d111be4c3a73e2551738c980ff7b)
   [manifest](https://github.com/wekan/wekan/issues/2168) and
   [icon](https://github.com/wekan/wekan/issues/1692) paths. Thanks to xet7.
-    
+
 Thanks to above GitHub users for their contributions, and translators for their translations.
 
 # v2.38 2019-03-06 Wekan release
@@ -283,13 +883,13 @@ and moved the following code around:
   xet7 can make changes directly and GitHub issues are enabled.
 
 Thanks to GitHub user xet7 for contributions.
-    
+
 # v2.35 2019-03-01 Wekan release
 
 This release fixes the following bugs:
 
-- [Add Filter fix back](https://github.com/wekan/wekan/issues/2213), 
-  because there was no bug in filter fix.              
+- [Add Filter fix back](https://github.com/wekan/wekan/issues/2213),
+  because there was no bug in filter fix.
 
 Thanks to GitHub user xet7 for contributions.
 
@@ -355,7 +955,7 @@ This release adds the following new Sandstorm features and fixes:
 - New Sandstorm board first user is Admin and [has IFTTT Rules](https://github.com/wekan/wekan/issues/2125) and Standalone Wekan Admin Panel.
   Probably some Admin Panel features do not work yet. Please keep backup of your grains before testing Admin Panel.
 - Linked Cards and Linked Boards.
-- Some not needed options like Logout etc have been hidden from top bar right menu. 
+- Some not needed options like Logout etc have been hidden from top bar right menu.
 - [Import board now works. "Board not found" is not problem anymore](https://github.com/wekan/wekan/issues/1430), because you can go to All Boards page to change to imported board.
 
 and removes the following features:
@@ -437,7 +1037,7 @@ and fixes the following bugs:
    mobile browser](https://github.com/wekan/wekan/issues/2183). Thanks to xet7.
 
 Thanks to above GitHub users for their contributions, and translators for their translations.
-    
+
 # v2.21 2019-02-12 Wekan release
 
 This release adds the following new features:
@@ -494,12 +1094,12 @@ and fixes the following bugs with Apache I-CLA, thanks to bentiss:
       header)
     - make sure the placeholder never get placed between the header and the
       list of cards in a swimlane
-    - fix the finding of the next and previous list of cards. 
+    - fix the finding of the next and previous list of cards.
     For all of this to be successful, we need to resize the swimlanes to a
     known value. This can lead to some visual jumps with scrolling when you
     drag or drop the swimlanea. I tried to remedy that by computing the new
     scroll value. Still not ideal however, as there are still some jumps when
-    dropping.    
+    dropping.
     Fixes [#2159](https://github.com/wekan/wekan/issues/2159).
 
 Thanks to above GitHub users and translators for contributions.
@@ -527,7 +1127,7 @@ Thanks to GitHub user ChronikEwok for contributions.
 
 This release fixes the following bugs:
 
-- [Fix: Not displaying card content of public board: Snap, Docker and Sandstorm Shared Wekan Board 
+- [Fix: Not displaying card content of public board: Snap, Docker and Sandstorm Shared Wekan Board
   Link](https://github.com/wekan/wekan/issues/1623) with
   [code from ChronikEwok](https://github.com/ChronikEwok/wekan/commit/cad9b20451bb6149bfb527a99b5001873b06c3de).
 
@@ -559,7 +1159,7 @@ This release adds the following new features with Apache I-CLA, thanks to bentis
 - [When writing to minicard, press Shift-Enter on minicard to go to next line
   below](https://github.com/wekan/wekan/commit/7a35099fb9778d5f3656a57c74af426cfb20fba3),
   to continue writing on same minicard 2nd line.
-    
+
 Thanks to GitHub user bentiss for contributions.
 
 # v2.12 2019-01-31 Wekan release
@@ -684,7 +1284,7 @@ and fixes the following bugs with Apache I-CLA, thanks to bentiss:
 - [Make sure Swimlanes and Lists have a populated sort field](https://github.com/wekan/wekan/commit/5c6a725712a443b4d03b4f86262033ddfb66bc3d).
   When moving around the swimlanes or the lists, if one element has a sort
   with a null value, the computation of the new sort value is aborted,
-  meaning that there are glitches in the UI.    
+  meaning that there are glitches in the UI.
   This happens on the first swimlane created with the new board, or when
   a swimlane or a list gets added through the API;
 - UI: Lists: [Make sure all lists boxes are the same height](https://github.com/wekan/wekan/commit/97d95b4bcbcab86629e368ea41bb9f00450b21f6).
@@ -754,7 +1354,7 @@ and fixes the following bugs:
   - When clicking Move Card, go to correct page position. Currently it's at empty page position, and there is
     need to scroll page up to see Move Card options. It should work similarly like Copy Card, that is visible.
   - Also check that other buttons go to visible page.
-    
+
 Thanks to above GitHub users for their contributions.
 
 # v1.97 2018-12-26 Wekan release
@@ -763,7 +1363,7 @@ This release adds the following new features:
 
 - Upgrade to Node 8.15.0 and MongoDB 3.2.22.
 - Stacksmith: back to Meteor 1.6.x based Wekan, because Meteor 1.8.x based is currently broken.
-    
+
 Thanks to GitHub user xet7 for contributions.
 
 # v1.96 2018-12-24 Wekan release
@@ -925,7 +1525,7 @@ Thanks to GitHub user xet7 for contributions.
 
 This release fixes the following bugs:
 
-- Remove extra commas `,` and add missing backslash `\`. 
+- Remove extra commas `,` and add missing backslash `\`.
   Maybe after that login, logout and CORS works.
 
 Thanks to GitHub user xet7 for contributions.
@@ -1080,7 +1680,7 @@ and hides the following features at Sandstorm:
 
 - Hide Linked Card and Linked Board on Sandstorm, because they are only
   useful when having multiple boards, and at Sandstorm
-  there is only one board per grain. Thanks to ocdtrekkie and xet7. Closes #1982 
+  there is only one board per grain. Thanks to ocdtrekkie and xet7. Closes #1982
 
 Thanks to above mentioned GitHub users for their contributions.
 
@@ -1242,7 +1842,7 @@ and tries to fix the following bugs:
 - Try to fix snap.
 
 Thanks to GitHub users Akuket and xet7 for their contributions.
-    
+
 # v1.53.5 2018-10-10 Wekan Edge relase
 
 This release tries to fix the following bugs:
@@ -1266,7 +1866,7 @@ This release adds the following new features:
 - [Upgrade](https://github.com/wekan/wekan/issues/1522) to [Meteor](https://blog.meteor.com/meteor-1-8-erases-the-debts-of-1-7-77af4c931fe3) [1.8.1-beta.0](https://github.com/meteor/meteor/issues/10216).
   with [these](https://github.com/wekan/wekan/commit/079e45eb52a0f62ddb6051bf2ea80fac8860d3d5)
   [commits](https://github.com/wekan/wekan/commit/dd47d46f4341a8c4ced05749633f783e88623e1b). So now it's possible to use MongoDB 2.6 - 4.0.
-  
+
 Thanks to GitHub user xet7 for contributions.
 
 # v1.53.2 2018-10-10 Wekan Edge release
@@ -1294,7 +1894,7 @@ and fixes the following bugs:
 - [Feature rules: fixes and enhancements](https://github.com/wekan/wekan/pull/1936).
 
 Thanks to GitHub users Akuket, Angtrim, dcmcand, lberk, maximest-pierre, InfoSec812, schulz and xet7 for their contributions.
-    
+
 # v1.52.1 2018-10-02 Wekan Edge release
 
 This release adds the following new features:
@@ -1309,7 +1909,7 @@ and reverts previous change:
   Oidc already works with [doorkeeper](https://github.com/doorkeeper-gem/doorkeeper-provider-app).
 
 Thanks to GitHub user xet7 for contributions.
-    
+
 # v1.51.2 2018-09-30 Wekan Edge release
 
 This release adds the following new features:
@@ -1368,7 +1968,7 @@ Thanks to GitHub users Angtrim, maurice-schleussinger, suprovsky and xet7 for th
 This release adds the following new features:
 
 - Change from Node v8.12.0 prerelease to use official Node v8.12.0.
-    
+
 Thanks to GitHub user xet7 for contributions.
 
 # v1.49 2018-09-17 Wekan release
@@ -1526,10 +2126,10 @@ Thanks to GitHub users hever, salleman33, tlevine and xet7 for their contributio
 This release adds the following new features:
 
 Add Caddy plugins:
-- [http.filter](https://caddyserver.com/docs/http.filter) 
+- [http.filter](https://caddyserver.com/docs/http.filter)
   for changing Wekan UI on the fly, for example custom logo,
   or changing to all different CSS file to have custom theme;
-- [http.ipfilter](https://caddyserver.com/docs/http.ipfilter) 
+- [http.ipfilter](https://caddyserver.com/docs/http.ipfilter)
   to block requests by ip address;
 - [http.realip](https://caddyserver.com/docs/http.realip)
   for showing real X-Forwarded-For IP to behind proxy;
@@ -1825,7 +2425,7 @@ and fixes the following bugs:
 * To fix ["title is required"](https://github.com/wekan/wekan/issues/1576) fix only
   [add-checklist-items and revert all other migration changes](https://github.com/wekan/wekan/issues/1734);
 * [Restore invitation code logic](https://github.com/wekan/wekan/pull/1732). Please test and add comment
-  to those invitation code issues that this fixes. 
+  to those invitation code issues that this fixes.
 
 Thanks to GitHub users TNick and xet7 for their contributions.
 
@@ -1996,7 +2596,7 @@ This release adds the following new features:
 and fixes the following bugs:
 
 * [Error: title is required](https://github.com/wekan/wekan/issues/1576).
-    
+
 Thanks to GitHub users Shahar-Y, thiagofernando and ThisNeko for their contributions.
 
 # v0.94 2018-05-03 Wekan release

@@ -9,6 +9,8 @@ version: '2'
 # https://github.com/wekan/wekan/wiki/Forgot-Password
 #---------------------------------------------------------------------------------------------------------
 # ==== Upgrading Wekan to new version =====
+# NOTE: MongoDB has changed from 3.x to 4.x, in that case you need backup/restore with --noIndexRestore
+#       see https://github.com/wekan/wekan/wiki/Backup
 # 1) Stop Wekan:
 #      docker-compose stop
 # 2) Download new version:
@@ -90,11 +92,11 @@ services:
   wekandb:
     #-------------------------------------------------------------------------------------
     # ==== MONGODB AND METEOR VERSION ====
-    # a) For Wekan Meteor 1.8.x version at meteor-1.8 branch, use mongo 4.x
-    #image: mongo:4.0.4
-    # b) For Wekan Meteor 1.6.x version at master/devel/edge branches.
+    # a) For Wekan Meteor 1.8.x version at master branch, use mongo 4.x
+    image: mongo:4.0.10
+    # b) For Wekan Meteor 1.6.x version at devel branch.
     # Only for Snap and Sandstorm while they are not upgraded yet to Meteor 1.8.x
-    image: mongo:3.2.21
+    #image: mongo:3.2.21
     #-------------------------------------------------------------------------------------
     container_name: wekan-db
     restart: always
@@ -110,17 +112,18 @@ services:
   wekan:
     #-------------------------------------------------------------------------------------
     # ==== MONGODB AND METEOR VERSION ====
-    # a) For Wekan Meteor 1.8.x version at meteor-1.8 branch,
+    # NOTE: Quay is currently not updated, use Docker Hub image below c)
+    # a) For Wekan Meteor 1.8.x version at master branch,
     #    using https://quay.io/wekan/wekan automatic builds
-    #image: quay.io/wekan/wekan:meteor-1.8
+    #image: quay.io/wekan/wekan:master
     # b) For Wekan Meteor 1.6.x version at master/devel/edge branches.
     # Only for Snap and Sandstorm while they are not upgraded yet to Meteor 1.8.x
-    image: quay.io/wekan/wekan:master
+    #image: quay.io/wekan/wekan:master
     # c) Using specific Meteor 1.6.x version tag:
     # image: quay.io/wekan/wekan:v1.95
     # c) Using Docker Hub automatic builds https://hub.docker.com/r/wekanteam/wekan
-    # image: wekanteam/wekan:meteor-1.8
-    # image: wekanteam/wekan:v1.95
+    image: wekanteam/wekan
+    # image: wekanteam/wekan:v2.99
     #-------------------------------------------------------------------------------------
     container_name: wekan-app
     restart: always
@@ -170,8 +173,8 @@ services:
       # NOTE: Special characters need to be url-encoded in MAIL_URL.
       #       You can encode those characters for example at: https://www.urlencoder.org
       #- MAIL_URL=smtp://user:pass@mailserver.example.com:25/
-      - MAIL_URL='smtp://<mail_url>:25/?ignoreTLS=true&tls={rejectUnauthorized:false}'
-      - MAIL_FROM='Wekan Notifications <noreply.wekan@mydomain.com>'
+      - MAIL_URL=smtp://<mail_url>:25/?ignoreTLS=true&tls={rejectUnauthorized:false}
+      - MAIL_FROM=Wekan Notifications <noreply.wekan@mydomain.com>
       #---------------------------------------------------------------
       # ==== OPTIONAL: MONGO OPLOG SETTINGS =====
       # https://github.com/wekan/wekan-mongodb/issues/2#issuecomment-378343587
@@ -232,6 +235,40 @@ services:
       #- ACCOUNTS_LOCKOUT_UNKNOWN_USERS_LOCKOUT_PERIOD=60
       #- ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURE_WINDOW=15
       #---------------------------------------------------------------
+      # ==== Allow to shrink attached/pasted image ====
+      # https://github.com/wekan/wekan/pull/2544
+      #-MAX_IMAGE_PIXEL=1024
+      #-IMAGE_COMPRESS_RATIO=80
+      #---------------------------------------------------------------
+      # ==== BIGEVENTS DUE ETC NOTIFICATIONS =====
+      # https://github.com/wekan/wekan/pull/2541
+      # Introduced a system env var BIGEVENTS_PATTERN default as "due",
+      # so any activityType matches the pattern, system will send out
+      # notifications to all board members no matter they are watching
+      # or tracking the board or not. Owner of the wekan server can
+      # disable the feature by setting this variable to "NONE" or
+      # change the pattern to any valid regex. i.e. '|' delimited
+      # activityType names.
+      # a) Default
+      #- BIGEVENTS_PATTERN=due
+      # b) All
+      #- BIGEVENTS_PATTERN=received|start|due|end
+      # c) Disabled
+      #- BIGEVENTS_PATTERN=NONE
+      #---------------------------------------------------------------
+      # ==== EMAIL DUE DATE NOTIFICATION =====
+      # https://github.com/wekan/wekan/pull/2536
+      # System timelines will be showing any user modification for
+      # dueat startat endat receivedat, also notification to
+      # the watchers and if any card is due, about due or past due.
+      #
+      # Notify due days, default 2 days before and after. 0 = due notifications disabled. Default: 2
+      #- NOTIFY_DUE_DAYS_BEFORE_AND_AFTER=2
+      #
+      # Notify due at hour of day. Default every morning at 8am. Can be 0-23.
+      # If env variable has parsing error, use default. Notification sent to watchers.
+      #- NOTIFY_DUE_AT_HOUR_OF_DAY=8
+      #-----------------------------------------------------------------
       # ==== EMAIL NOTIFICATION TIMEOUT, ms =====
       # Defaut: 30000 ms = 30s
       #- EMAIL_NOTIFICATION_TIMEOUT=30000
@@ -239,6 +276,10 @@ services:
       # ==== CORS =====
       # CORS: Set Access-Control-Allow-Origin header.
       #- CORS=*
+      # CORS_ALLOW_HEADERS: Set Access-Control-Allow-Headers header.  "Authorization,Content-Type" is required for cross-origin use of the API.
+      #- CORS_ALLOW_HEADERS=Authorization,Content-Type
+      # CORS_EXPOSE_HEADERS: Set Access-Control-Expose-Headers header.  This is not needed for typical CORS situations
+      #- CORS_EXPOSE_HEADERS=*
       #-----------------------------------------------------------------
       # ==== MATOMO INTEGRATION ====
       # Optional: Integration with Matomo https://matomo.org that is installed to your server
@@ -324,6 +365,10 @@ services:
       #- OAUTH2_USERINFO_ENDPOINT=/oauth/userinfo
       # OAuth2 Token Endpoint.
       #- OAUTH2_TOKEN_ENDPOINT=/oauth/token
+      # OAUTH2 ID Token Whitelist Fields.
+      #- OAUTH2_ID_TOKEN_WHITELIST_FIELDS=""
+      # OAUTH2 Request Permissions.
+      #- OAUTH2_REQUEST_PERMISSIONS=openid profile email
       # OAuth2 ID Mapping
       #- OAUTH2_ID_MAP=
       # OAuth2 Username Mapping
@@ -400,6 +445,9 @@ services:
       # Reject Unauthorized Certificate
       #- LDAP_REJECT_UNAUTHORIZED=false
       #
+      # Option to login to the LDAP server with the user's own username and password, instead of an administrator key. Default: false (use administrator key).
+      #- LDAP_USER_AUTHENTICATION="true"
+      #
       # Optional extra LDAP filters. Don't forget the outmost enclosing parentheses if needed
       #- LDAP_USER_SEARCH_FILTER=
       #
@@ -473,10 +521,10 @@ services:
       #---------------------------------------------------------------------
       # Login to LDAP automatically with HTTP header.
       # In below example for siteminder, at right side of = is header name.
-      #- HEADER_LOGIN_ID=BNPPUID
-      #- HEADER_LOGIN_FIRSTNAME=BNPPFIRSTNAME
-      #- HEADER_LOGIN_LASTNAME=BNPPLASTNAME
-      #- HEADER_LOGIN_EMAIL=BNPPEMAILADDRESS
+      #- HEADER_LOGIN_ID=HEADERUID
+      #- HEADER_LOGIN_FIRSTNAME=HEADERFIRSTNAME
+      #- HEADER_LOGIN_LASTNAME=HEADERLASTNAME
+      #- HEADER_LOGIN_EMAIL=HEADEREMAILADDRESS
       #---------------------------------------------------------------------
       # ==== LOGOUT TIMER, probably does not work yet ====
       # LOGOUT_WITH_TIMER : Enables or not the option logout with timer

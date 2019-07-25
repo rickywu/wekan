@@ -4,9 +4,10 @@ template(name="cardCustomFieldsPopup")
             li.item(class="")
                 a.name.js-select-field(href="#")
                     span.full-name
+                      +viewer
                         = name
                     if hasCustomField
-                        i.fa.fa-check
+                      i.fa.fa-check
     hr
     a.quiet-button.full.js-settings
         i.fa.fa-cog
@@ -30,6 +31,10 @@ template(name="cardCustomField-text")
                         = value
                 else
                     | {{_ 'edit'}}
+    else
+      +viewer
+        = value
+
 
 template(name="cardCustomField-number")
     if canModifyCard
@@ -44,6 +49,9 @@ template(name="cardCustomField-number")
                     = value
                 else
                     | {{_ 'edit'}}
+    else
+        if value
+            = value
 
 template(name="cardCustomField-date")
     if canModifyCard
@@ -54,6 +62,11 @@ template(name="cardCustomField-date")
                         | {{showDate}}
             else
                 | {{_ 'edit'}}
+    else
+        if value
+            div.card-date
+                time(datetime="{{showISODate}}")
+                    | {{showDate}}
 
 template(name="cardCustomField-dropdown")
     if canModifyCard
@@ -61,9 +74,13 @@ template(name="cardCustomField-dropdown")
             select.inline
                 each items
                     if($eq data.value this._id)
-                        option(value=_id selected="selected") {{name}}
+                        option(value=_id selected="selected")
+                          +viewer
+                            = name
                     else
-                        option(value=_id) {{name}}
+                        option(value=_id)
+                          +viewer
+                            = name
             .edit-controls.clearfix
                 button.primary(type="submit") {{_ 'save'}}
                 a.fa.fa-times-thin.js-close-inlined-form
@@ -74,3 +91,7 @@ template(name="cardCustomField-dropdown")
                         = selectedItem
                 else
                     | {{_ 'edit'}}
+    else
+        if value
+            +viewer
+                = selectedItem

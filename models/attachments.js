@@ -1,6 +1,5 @@
 Attachments = new FS.Collection('attachments', {
   stores: [
-
     // XXX Add a new store for cover thumbnails so we don't load big images in
     // the general board view
     new FS.Store.GridFS('attachments', {
@@ -13,7 +12,7 @@ Attachments = new FS.Collection('attachments', {
       // XXX Should we use `beforeWrite` option of CollectionFS instead of
       // collection-hooks?
       // We should use `beforeWrite`.
-      beforeWrite: (fileObj) => {
+      beforeWrite: fileObj => {
         if (!fileObj.isImage()) {
           return {
             type: 'application/octet-stream',
@@ -24,7 +23,6 @@ Attachments = new FS.Collection('attachments', {
     }),
   ],
 });
-
 
 if (Meteor.isServer) {
   Meteor.startup(() => {
@@ -72,30 +70,43 @@ if (Meteor.isServer) {
         attachmentId: doc._id,
         boardId: doc.boardId,
         cardId: doc.cardId,
+        listId: doc.listId,
+        swimlaneId: doc.swimlaneId,
       });
     } else {
       // Don't add activity about adding the attachment as the activity
       // be imported and delete source field
-      Attachments.update({
-        _id: doc._id,
-      }, {
-        $unset: {
-          source: '',
+      Attachments.update(
+        {
+          _id: doc._id,
         },
-      });
+        {
+          $unset: {
+            source: '',
+          },
+        },
+      );
     }
+  });
+
+  Attachments.files.before.remove((userId, doc) => {
+    Activities.insert({
+      userId,
+      type: 'card',
+      activityType: 'deleteAttachment',
+      attachmentId: doc._id,
+      boardId: doc.boardId,
+      cardId: doc.cardId,
+      listId: doc.listId,
+      swimlaneId: doc.swimlaneId,
+    });
   });
 
   Attachments.files.after.remove((userId, doc) => {
     Activities.remove({
       attachmentId: doc._id,
     });
-    Activities.insert({
-      userId,
-      type: 'card',
-      activityType: 'deleteAttachment',
-      boardId: doc.boardId,
-      cardId: doc.cardId,
-    });
   });
 }
+
+export default Attachments;

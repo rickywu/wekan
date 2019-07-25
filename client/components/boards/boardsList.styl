@@ -94,13 +94,41 @@ $spaceBetweenTiles = 16px
   .is-star-active
     color: white
 
+  .fa-clone
+    position: absolute;
+    bottom: 0
+    font-size: 14px
+    height: 18px
+    line-height: 18px
+    opacity: 0
+    right: 0
+    padding: 9px 9px
+    transition-duration: .15s
+    transition-property: color, font-size, background
+
+  .fa-archive
+    position: absolute;
+    bottom: 0
+    font-size: 14px
+    height: 18px
+    line-height: 18px
+    opacity: 0
+    left: 0
+    padding: 9px 9px
+    transition-duration: .15s
+    transition-property: color, font-size, background
+
   li:hover a
     &:hover
       .fa-star,
+      .fa-clone,
+      .fa-archive,
       .fa-star-o
         color: white
 
     .fa-star,
+    .fa-clone,
+    .fa-archive,
     .fa-star-o
       color: white
       opacity: .75
@@ -133,6 +161,7 @@ $spaceBetweenTiles = 16px
       padding-right: 6px
 
     .background-box
+      color: white
       border-radius: 3px
       background-size: cover
       display: block
@@ -154,10 +183,11 @@ $spaceBetweenTiles = 16px
     overflow: scroll
 
     li
-      width: 33.3%
+      width: 50% 
 
     .board-list-item
       overflow: hidden
+      height: 8rem
 
     .board-list-item-sub-name
       position: relative
@@ -166,4 +196,4 @@ $spaceBetweenTiles = 16px
 
 @media screen and (max-width: 360px)
     li
-      width: 50%
+      width: 100%

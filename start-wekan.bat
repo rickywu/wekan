@@ -21,6 +21,11 @@ SET PORT=2000
 REM # If you disable Wekan API with false, Export Board does not work.
 SET WITH_API=true
 
+REM # ==== Allow to shrink attached/pasted image ====
+REM # https://github.com/wekan/wekan/pull/2544
+REM SET MAX_IMAGE_PIXEL=1024
+REM SET IMAGE_COMPRESS_RATIO=80
+
 REM # ==== PASSWORD BRUTE FORCE PROTECTION ====
 REM #https://atmospherejs.com/lucasantoniassi/accounts-lockout
 REM #Defaults below. Uncomment to change. wekan/server/accounts-lockout.js
@@ -30,6 +35,44 @@ REM SET ACCOUNTS_LOCKOUT_KNOWN_USERS_FAILURE_WINDOW=15
 REM SET ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURES_BERORE=3
 REM SET ACCOUNTS_LOCKOUT_UNKNOWN_USERS_LOCKOUT_PERIOD=60
 REM SET ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURE_WINDOW=15
+
+REM # ==== BIGEVENTS DUE ETC NOTIFICATIONS =====
+REM # https://github.com/wekan/wekan/pull/2541
+REM # Introduced a system env var BIGEVENTS_PATTERN default as "due",
+REM # so any activityType matches the pattern, system will send out
+REM # notifications to all board members no matter they are watching
+REM # or tracking the board or not. Owner of the wekan server can
+REM # disable the feature by setting this variable to "NONE" or
+REM # change the pattern to any valid regex. i.e. '|' delimited
+REM # activityType names.
+REM # a) Default
+REM SET BIGEVENTS_PATTERN=due
+REM # b) All
+REM SET BIGEVENTS_PATTERN=received|start|due|end
+REM # c) Disabled
+REM SET BIGEVENTS_PATTERN=NONE
+
+REM # ==== EMAIL DUE DATE NOTIFICATION =====
+REM # https://github.com/wekan/wekan/pull/2536
+REM # System timelines will be showing any user modification for
+REM # dueat startat endat receivedat, also notification to
+REM # the watchers and if any card is due, about due or past due.
+REM # Notify due days, default 2 days before and after. 0 = due notifications disabled. Default: 2
+REM SET NOTIFY_DUE_DAYS_BEFORE_AND_AFTER=2
+REM # Notify due at hour of day. Default every morning at 8am. Can be 0-23.
+REM # If env variable has parsing error, use default. Notification sent to watchers.
+REM SET NOTIFY_DUE_AT_HOUR_OF_DAY=8
+
+REM # ==== EMAIL NOTIFICATION TIMEOUT, ms =====
+REM # Defaut: 30000 ms = 30s
+REM SET EMAIL_NOTIFICATION_TIMEOUT=30000
+
+REM # CORS: Set Access-Control-Allow-Origin header. Example: *
+REM SET CORS=*
+REM # To enable the Set Access-Control-Allow-Headers header. "Authorization,Content-Type" is required for cross-origin use of the API.
+REM SET CORS_ALLOW_HEADERS=Authorization,Content-Type
+REM # To enable the Set Access-Control-Expose-Headers header.  This is not needed for typical CORS situations. Example: *
+REM SET CORS_EXPOSE_HEADERS=*
 
 REM # Optional: Integration with Matomo https://matomo.org that is installed to your server
 REM # The address of the server where Matomo is hosted.
@@ -90,6 +133,25 @@ REM SET OAUTH2_USERINFO_ENDPOINT=
 REM # OAuth2 Token Endpoint. Example: /oauth/token
 REM # example: OAUTH2_TOKEN_ENDPOINT=/oauth/token
 REM SET OAUTH2_TOKEN_ENDPOINT=
+
+
+REM # OAUTH2 ID Token Whitelist Fields.
+REM SET OAUTH2_ID_TOKEN_WHITELIST_FIELDS=[]
+
+REM # OAUTH2 Request Permissions.
+REM SET OAUTH2_REQUEST_PERMISSIONS='openid profile email'
+
+REM # OAuth2 ID Mapping
+REM SET OAUTH2_ID_MAP=
+
+REM # OAuth2 Username Mapping
+REM SET OAUTH2_USERNAME_MAP=
+
+REM # OAuth2 Fullname Mapping
+REM SET OAUTH2_FULLNAME_MAP=
+
+REM # OAuth2 Email Mapping
+REM SET OAUTH2_EMAIL_MAP=
 
 REM ------------------------------------------------------------
 
@@ -172,6 +234,9 @@ REM SET LDAP_CA_CERT=
 REM # LDAP_REJECT_UNAUTHORIZED : Reject Unauthorized Certificate
 REM # example : LDAP_REJECT_UNAUTHORIZED=true
 REM SET LDAP_REJECT_UNAUTHORIZED=false
+
+REM # Option to login to the LDAP server with the user's own username and password, instead of an administrator key. Default: false (use administrator key).
+REM SET LDAP_USER_AUTHENTICATION=true
 
 REM # LDAP_USER_SEARCH_FILTER : Optional extra LDAP filters. Don't forget the outmost enclosing parentheses if needed
 REM # example : LDAP_USER_SEARCH_FILTER=
@@ -273,10 +338,10 @@ REM SET LDAP_SYNC_ADMIN_GROUPS=group1,group2
 
 REM # Login to LDAP automatically with HTTP header.
 REM # In below example for siteminder, at right side of = is header name.
-REM SET HEADER_LOGIN_ID=BNPPUID
-REM SET HEADER_LOGIN_FIRSTNAME=BNPPFIRSTNAME
-REM SET HEADER_LOGIN_LASTNAME=BNPPLASTNAME
-REM SET HEADER_LOGIN_EMAIL=BNPPEMAILADDRESS
+REM SET HEADER_LOGIN_ID=HEADERUID
+REM SET HEADER_LOGIN_FIRSTNAME=HEADERFIRSTNAME
+REM SET HEADER_LOGIN_LASTNAME=HEADERLASTNAME
+REM SET HEADER_LOGIN_EMAIL=HEADEREMAILADDRESS
 
 REM ------------------------------------------------
 

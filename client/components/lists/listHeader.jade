@@ -9,8 +9,9 @@ template(name="listHeader")
         if currentList
           a.list-header-left-icon.fa.fa-angle-left.js-unselect-list
       h2.list-header-name(
-        class="{{#if currentUser.isBoardMember}}js-open-inlined-form is-editable{{/if}}")
-        = title
+        class="{{#if currentUser.isBoardMember}}{{#unless currentUser.isCommentOnly}}js-open-inlined-form is-editable{{/unless}}{{/if}}")
+        +viewer
+          = title
         if wipLimit.enabled
          |&nbsp;(
          span(class="{{#if reachedWipLimit}}highlight{{/if}}") {{cards.count}}
@@ -18,7 +19,7 @@ template(name="listHeader")
 
         if showCardsCountForList cards.count
           |&nbsp;
-          p.quiet.small {{cardsCount}} {{_ 'cards-count'}}
+          span(class="cardCount") {{cardsCount}} {{_ 'cards-count'}}
       if isMiniScreen
         if currentList
           if isWatching

@@ -99,6 +99,14 @@
   .highlight
     color: #ce1414
 
+  .cardCount
+    color: #8c8c8c
+    font-size: 0.8em
+
+.list-header .list-header-plus-icon, .js-open-list-menu, .list-header-menu a
+    color #4d4d4d
+    padding-left 4px
+
 .list-body
   flex: 1 1 auto
   flex-direction: column
@@ -161,7 +169,7 @@
 
   .mini-list
     flex: 0 0 60px
-    height: 60px
+    height: auto
     width: 100%
     border-left: 0px
     border-bottom: 1px solid darken(white, 20%)
@@ -170,6 +178,8 @@
     display: block
     width: 100%
     border-left: 0px
+    &:first-child
+      margin-left: 0px
 
     &.ui-sortable-helper
       flex: 0 0 60px
@@ -188,8 +198,16 @@
       border-left: 0px
       border-bottom: 1px solid darken(white, 20%)
 
-  .list-header
+  .list-body
+    padding: 15px 19px;
 
+  .list-header
+    padding: 0 12px 0px
+    border-bottom: 0px solid #e4e4e4
+    height: 60px
+    margin-top: 10px
+    display: flex
+    align-items: center
     .list-header-left-icon
       display: inline
       padding: 7px
@@ -201,8 +219,10 @@
     .list-header-menu-icon
       position: absolute
       padding: 7px
-      top: -@padding
+      top: 50%
+      transform: translateY(-50%)
       right: 17px
+      font-size: 20px
 
 .link-board-wrapper
   display: flex

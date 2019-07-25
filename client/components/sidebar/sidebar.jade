@@ -10,8 +10,8 @@ template(name="sidebar")
           i.fa.fa-keyboard-o
           span {{_ 'keyboard-shortcuts' }}
       .sidebar-content.js-board-sidebar-content.js-perfect-scrollbar
-        a.hide-btn.js-hide-sidebar
-          i.fa.fa-navicon
+        //a.hide-btn.js-hide-sidebar
+        //  i.fa.fa-navicon
         unless isDefaultView
           h2
             a.fa.fa-chevron-left.js-back-home
@@ -34,8 +34,9 @@ template(name="membersWidget")
     h3
       i.fa.fa-user
       | {{_ 'members'}}
-      a.board-header-btn.js-open-board-menu(title="{{_ 'boardMenuPopup-title'}}").right
-        i.board-header-btn-icon.fa.fa-cog
+      unless currentUser.isCommentOnly
+        a.board-header-btn.js-open-board-menu(title="{{_ 'boardMenuPopup-title'}}").right
+          i.board-header-btn-icon.fa.fa-cog
 
     .board-widget-content
       each currentBoard.activeMembers
@@ -61,6 +62,7 @@ template(name="boardChangeColorPopup")
     each backgroundColors
       .board-background-select.js-select-background
         span.background-box(class="board-color-{{this}}")
+          span {{this}}
           if isSelected
             i.fa.fa-check
 
@@ -162,7 +164,7 @@ template(name="boardMenuPopup")
       hr
       ul.pop-over-list
         li: a(href="{{exportUrl}}", download="{{exportFilename}}") {{_ 'export-board'}}
-        //导出周报菜单
+        //导出周报菜单（wekan修改�
         li: a.pop-over-list-a(href="#", download="{{exportFilename}}") {{_ 'export-weekly'}}
         unless currentBoard.isTemplatesBoard
           li: a.js-archive-board {{_ 'archive-board'}}
@@ -175,7 +177,7 @@ template(name="boardMenuPopup")
     hr
     ul.pop-over-list
       li: a(href="{{exportUrl}}", download="{{exportFilename}}") {{_ 'export-board'}}
-      //导出周报菜单
+      //导出周报菜单（wekan修改�
       li: a.pop-over-list-a(href="#", download="{{exportFilename}}") {{_ 'export-weekly'}}
       li: a.js-import-board {{_ 'import-board-c'}}
       li: a.js-archive-board {{_ 'archive-board'}}
@@ -193,7 +195,9 @@ template(name="labelsWidget")
       each currentBoard.labels
           a.card-label(class="card-label-{{color}}"
             class="{{#if currentUser.isNotCommentOnly}}js-label{{/if}}")
-            span.card-label-name= name
+            span.card-label-name
+              +viewer
+                = name
       if currentUser.isBoardAdmin
         a.card-label.add-label.js-add-label
           i.fa.fa-plus

@@ -77,12 +77,31 @@ template(name="cardDetails")
         h3.card-details-item-title {{_ 'labels'}}
         a(class="{{#if canModifyCard}}js-add-labels{{else}}is-disabled{{/if}}" title="{{_ 'card-labels-title'}}")
           each labels
-            span.card-label(class="card-label-{{color}}" title=name)= name
+            span.card-label(class="card-label-{{color}}" title=name)
+              +viewer
+                = name
         if canModifyCard
           a.card-label.add-label.js-add-labels(title="{{_ 'card-labels-title'}}")
             i.fa.fa-plus
-    //- XXX We should use "editable" to avoid repetiting ourselves
 
+    .card-details-items
+      each customFieldsWD
+        .card-details-item.card-details-item-customfield
+          h3.card-details-item-title
+            +viewer
+              = definition.name
+          +cardCustomField
+
+    .card-details-items
+      if getSpentTime
+        .card-details-item.card-details-item-spent
+          if getIsOvertime
+            h3.card-details-item-title {{_ 'overtime-hours'}}
+          else
+            h3.card-details-item-title {{_ 'spent-time-hours'}}
+          +cardSpentTime
+
+    //- XXX We should use "editable" to avoid repetiting ourselves
     if canModifyCard
       h3.card-details-item-title {{_ 'description'}}
       +inlinedCardDescription(classNames="card-description js-card-description")
@@ -108,24 +127,6 @@ template(name="cardDetails")
       h3.card-details-item-title {{_ 'description'}}
       +viewer
         = getDescription
-
-    .card-details-items
-      each customFieldsWD
-        .card-details-item.card-details-item-customfield
-          h3.card-details-item-title
-            = definition.name
-          +cardCustomField
-
-    .card-details-items
-      if getSpentTime
-        .card-details-item.card-details-item-spent
-          if getIsOvertime
-            h3.card-details-item-title {{_ 'overtime-hours'}}
-          else
-            h3.card-details-item-title {{_ 'spent-time-hours'}}
-          +cardSpentTime
-
-
 
     .card-details-items
       .card-details-item.card-details-item-name
@@ -199,20 +200,20 @@ template(name="cardDetails")
           +activities(card=this mode="card")
 
 template(name="editCardTitleForm")
-  textarea.js-edit-card-title(rows='1' autofocus)
+  textarea.js-edit-card-title(rows='1' autofocus dir="auto")
     = getTitle
   .edit-controls.clearfix
     button.primary.confirm.js-submit-edit-card-title-form(type="submit") {{_ 'save'}}
     a.fa.fa-times-thin.js-close-inlined-form
 
 template(name="editCardRequesterForm")
-  input.js-edit-card-requester(type='text' autofocus value=getRequestedBy)
+  input.js-edit-card-requester(type='text' autofocus value=getRequestedBy dir="auto")
   .edit-controls.clearfix
     button.primary.confirm.js-submit-edit-card-requester-form(type="submit") {{_ 'save'}}
     a.fa.fa-times-thin.js-close-inlined-form
 
 template(name="editCardAssignerForm")
-  input.js-edit-card-assigner(type='text' autofocus value=getAssignedBy)
+  input.js-edit-card-assigner(type='text' autofocus value=getAssignedBy dir="auto")
   .edit-controls.clearfix
     button.primary.confirm.js-submit-edit-card-assigner-form(type="submit") {{_ 'save'}}
     a.fa.fa-times-thin.js-close-inlined-form
@@ -223,14 +224,14 @@ template(name="cardDetailsActionsPopup")
   if canModifyCard
     hr
     ul.pop-over-list
-      li: a.js-members {{_ 'card-edit-members'}}
-      li: a.js-labels {{_ 'card-edit-labels'}}
-      li: a.js-attachments {{_ 'card-edit-attachments'}}
+      //li: a.js-members {{_ 'card-edit-members'}}
+      //li: a.js-labels {{_ 'card-edit-labels'}}
+      //li: a.js-attachments {{_ 'card-edit-attachments'}}
       li: a.js-custom-fields {{_ 'card-edit-custom-fields'}}
-      li: a.js-received-date {{_ 'editCardReceivedDatePopup-title'}}
-      li: a.js-start-date {{_ 'editCardStartDatePopup-title'}}
-      li: a.js-due-date {{_ 'editCardDueDatePopup-title'}}
-      li: a.js-end-date {{_ 'editCardEndDatePopup-title'}}
+      //li: a.js-received-date {{_ 'editCardReceivedDatePopup-title'}}
+      //li: a.js-start-date {{_ 'editCardStartDatePopup-title'}}
+      //li: a.js-due-date {{_ 'editCardDueDatePopup-title'}}
+      //li: a.js-end-date {{_ 'editCardEndDatePopup-title'}}
       li: a.js-spent-time {{_ 'editCardSpentTimePopup-title'}}
       li: a.js-set-card-color {{_ 'setCardColorPopup-title'}}
     hr
