@@ -233,6 +233,7 @@ Template.boardMenuPopup.events({
               "本周进度": getcont(lscards[i]["customFields"], "本周进度"),
               "下周计划": getcont(lscards[i]["customFields"], "下周计划"),
               "交付物": getcont(lscards[i]["customFields"], "交付物"),
+              "问题": getcont(lscards[i]["customFields"], "问题"),
               "状态": getstate(lscards[i]["listId"], jsonData[0]["lists"]),
               "标签": getxhLabelId(lscards[i]["labelIds"], jsonData[0]["labels"]),
               "计划完成时间": replaceTime(lscards[i]["dueAt"]),
