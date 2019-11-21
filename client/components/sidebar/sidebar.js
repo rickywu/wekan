@@ -1,6 +1,8 @@
 Sidebar = null;
 
 const defaultView = 'home';
+const MCB = '.materialCheckBox';
+const CKCLS = 'is-checked';
 
 const viewTitles = {
   filter: 'filter-cards',
@@ -47,8 +49,11 @@ BlazeComponent.extendComponent({
   },
 
   calculateNextPeak() {
-    const altitude = this.find('.js-board-sidebar-content').scrollHeight;
-    this.callFirstWith(this, 'setNextPeak', altitude);
+    const sidebarElement = this.find('.js-board-sidebar-content');
+    if (sidebarElement) {
+      const altitude = sidebarElement.scrollHeight;
+      this.callFirstWith(this, 'setNextPeak', altitude);
+    }
   },
 
   reachNextPeak() {
@@ -101,6 +106,20 @@ BlazeComponent.extendComponent({
         'click .js-hide-sidebar': this.hide,
         'click .js-toggle-sidebar': this.toggle,
         'click .js-back-home': this.setView,
+        'click .js-toggle-minicard-label-text'() {
+          currentUser = Meteor.user();
+          if (currentUser) {
+            Meteor.call('toggleMinicardLabelText');
+          } else {
+            import { Cookies } from 'meteor/ostrio:cookies';
+            const cookies = new Cookies();
+            if (cookies.has('hiddenMinicardLabelText')) {
+              cookies.remove('hiddenMinicardLabelText');
+            } else {
+              cookies.set('hiddenMinicardLabelText', 'true');
+            }
+          }
+        },
         'click .js-shortcuts'() {
           FlowRouter.go('shortcuts');
         },
@@ -110,6 +129,23 @@ BlazeComponent.extendComponent({
 }).register('sidebar');
 
 Blaze.registerHelper('Sidebar', () => Sidebar);
+
+Template.homeSidebar.helpers({
+  hiddenMinicardLabelText() {
+    currentUser = Meteor.user();
+    if (currentUser) {
+      return (currentUser.profile || {}).hiddenMinicardLabelText;
+    } else {
+      import { Cookies } from 'meteor/ostrio:cookies';
+      const cookies = new Cookies();
+      if (cookies.has('hiddenMinicardLabelText')) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  },
+});
 
 EscapeActions.register(
   'sidebarView',
@@ -268,44 +304,71 @@ Template.membersWidget.events({
 });
 
 BlazeComponent.extendComponent({
+  boardId() {
+    return Session.get('currentBoard') || Integrations.Const.GLOBAL_WEBHOOK_ID;
+  },
   integrations() {
-    const boardId = Session.get('currentBoard');
+    const boardId = this.boardId();
     return Integrations.find({ boardId: `${boardId}` }).fetch();
   },
-
-  integration(id) {
-    const boardId = Session.get('currentBoard');
-    return Integrations.findOne({ _id: id, boardId: `${boardId}` });
+  types() {
+    return Integrations.Const.WEBHOOK_TYPES;
   },
-
+  integration(cond) {
+    const boardId = this.boardId();
+    const condition = { boardId, ...cond };
+    for (const k in condition) {
+      if (!condition[k]) delete condition[k];
+    }
+    return Integrations.findOne(condition);
+  },
+  onCreated() {
+    this.disabled = new ReactiveVar(false);
+  },
   events() {
     return [
       {
+        'click a.flex'(evt) {
+          this.disabled.set(!this.disabled.get());
+          $(evt.target).toggleClass(CKCLS, this.disabled.get());
+        },
         submit(evt) {
           evt.preventDefault();
           const url = evt.target.url.value;
-          const boardId = Session.get('currentBoard');
+          const boardId = this.boardId();
           let id = null;
           let integration = null;
+          const title = evt.target.title.value;
+          const token = evt.target.token.value;
+          const type = evt.target.type.value;
+          const enabled = !this.disabled.get();
+          let remove = false;
+          const values = {
+            url,
+            type,
+            token,
+            title,
+            enabled,
+          };
           if (evt.target.id) {
             id = evt.target.id.value;
-            integration = this.integration(id);
-            if (url) {
-              Integrations.update(integration._id, {
-                $set: {
-                  url: `${url}`,
-                },
-              });
-            } else {
-              Integrations.remove(integration._id);
-            }
+            integration = this.integration({ _id: id });
+            remove = !url;
+          } else if (url) {
+            integration = this.integration({ url, token });
+          }
+          if (remove) {
+            Integrations.remove(integration._id);
+          } else if (integration && integration._id) {
+            Integrations.update(integration._id, {
+              $set: values,
+            });
           } else if (url) {
             Integrations.insert({
+              ...values,
               userId: Meteor.userId(),
               enabled: true,
-              type: 'outgoing-webhooks',
-              url: `${url}`,
-              boardId: `${boardId}`,
+              boardId,
               activities: ['all'],
             });
           }
@@ -462,12 +525,12 @@ BlazeComponent.extendComponent({
           evt.preventDefault();
           this.currentBoard.allowsSubtasks = !this.currentBoard.allowsSubtasks;
           this.currentBoard.setAllowsSubtasks(this.currentBoard.allowsSubtasks);
-          $('.js-field-has-subtasks .materialCheckBox').toggleClass(
-            'is-checked',
+          $(`.js-field-has-subtasks ${MCB}`).toggleClass(
+            CKCLS,
             this.currentBoard.allowsSubtasks,
           );
           $('.js-field-has-subtasks').toggleClass(
-            'is-checked',
+            CKCLS,
             this.currentBoard.allowsSubtasks,
           );
           $('.js-field-deposit-board').prop(
@@ -503,15 +566,12 @@ BlazeComponent.extendComponent({
           ];
           options.forEach(function(element) {
             if (element !== value) {
-              $(`#${element} .materialCheckBox`).toggleClass(
-                'is-checked',
-                false,
-              );
-              $(`#${element}`).toggleClass('is-checked', false);
+              $(`#${element} ${MCB}`).toggleClass(CKCLS, false);
+              $(`#${element}`).toggleClass(CKCLS, false);
             }
           });
-          $(`#${value} .materialCheckBox`).toggleClass('is-checked', true);
-          $(`#${value}`).toggleClass('is-checked', true);
+          $(`#${value} ${MCB}`).toggleClass(CKCLS, true);
+          $(`#${value}`).toggleClass(CKCLS, true);
           this.currentBoard.setPresentParentTask(value);
           evt.preventDefault();
         },

@@ -1,4 +1,55 @@
 Utils = {
+  setBoardView(view) {
+    import { Cookies } from 'meteor/ostrio:cookies';
+    const cookies = new Cookies();
+    currentUser = Meteor.user();
+    if (currentUser) {
+      Meteor.user().setBoardView(view);
+    } else {
+      if (view === 'board-view-lists') {
+        cookies.set('boardView', 'board-view-lists'); //true
+      } else if (view === 'board-view-swimlanes') {
+        cookies.set('boardView', 'board-view-swimlanes'); //true
+        //} else if (view === 'board-view-collapse') {
+        //  cookies.set('boardView', 'board-view-swimlane'); //true
+        //  cookies.set('collapseSwimlane', 'true'); //true
+      } else if (view === 'board-view-cal') {
+        cookies.set('boardView', 'board-view-cal'); //true
+      }
+    }
+  },
+
+  unsetBoardView() {
+    import { Cookies } from 'meteor/ostrio:cookies';
+    const cookies = new Cookies();
+    cookies.remove('boardView');
+    cookies.remove('collapseSwimlane');
+  },
+
+  boardView() {
+    currentUser = Meteor.user();
+    if (currentUser) {
+      return (currentUser.profile || {}).boardView;
+    } else {
+      import { Cookies } from 'meteor/ostrio:cookies';
+      const cookies = new Cookies();
+      if (cookies.get('boardView') === 'board-view-lists') {
+        return 'board-view-lists';
+      } else if (
+        cookies.get('boardView') === 'board-view-swimlanes'
+        //&& !cookies.has('collapseSwimlane')
+      ) {
+        return 'board-view-swimlanes';
+        //} else if (cookies.has('collapseSwimlane')) {
+        //  return 'board-view-swimlanes';
+      } else if (cookies.get('boardView') === 'board-view-cal') {
+        return 'board-view-cal';
+      } else {
+        return false;
+      }
+    }
+  },
+
   // XXX We should remove these two methods
   goBoardId(_id) {
     const board = Boards.findOne(_id);
@@ -23,7 +74,83 @@ Utils = {
       })
     );
   },
-
+  MAX_IMAGE_PIXEL: Meteor.settings.public.MAX_IMAGE_PIXEL,
+  COMPRESS_RATIO: Meteor.settings.public.IMAGE_COMPRESS_RATIO,
+  processUploadedAttachment(card, fileObj, callback) {
+    const next = attachment => {
+      if (typeof callback === 'function') {
+        callback(attachment);
+      }
+    };
+    if (!card) {
+      return next();
+    }
+    const file = new FS.File(fileObj);
+    if (card.isLinkedCard()) {
+      file.boardId = Cards.findOne(card.linkedId).boardId;
+      file.cardId = card.linkedId;
+    } else {
+      file.boardId = card.boardId;
+      file.swimlaneId = card.swimlaneId;
+      file.listId = card.listId;
+      file.cardId = card._id;
+    }
+    file.userId = Meteor.userId();
+    if (file.original) {
+      file.original.name = fileObj.name;
+    }
+    return next(Attachments.insert(file));
+  },
+  shrinkImage(options) {
+    // shrink image to certain size
+    const dataurl = options.dataurl,
+      callback = options.callback,
+      toBlob = options.toBlob;
+    let canvas = document.createElement('canvas'),
+      image = document.createElement('img');
+    const maxSize = options.maxSize || 1024;
+    const ratio = options.ratio || 1.0;
+    const next = function(result) {
+      image = null;
+      canvas = null;
+      if (typeof callback === 'function') {
+        callback(result);
+      }
+    };
+    image.onload = function() {
+      let width = this.width,
+        height = this.height;
+      let changed = false;
+      if (width > height) {
+        if (width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+          changed = true;
+        }
+      } else if (height > maxSize) {
+        width *= maxSize / height;
+        height = maxSize;
+        changed = true;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(this, 0, 0, width, height);
+      if (changed === true) {
+        const type = 'image/jpeg';
+        if (toBlob) {
+          canvas.toBlob(next, type, ratio);
+        } else {
+          next(canvas.toDataURL(type, ratio));
+        }
+      } else {
+        next(changed);
+      }
+    };
+    image.onerror = function() {
+      next(false);
+    };
+    image.src = dataurl;
+  },
   capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   },

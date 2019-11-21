@@ -20,6 +20,8 @@ AccountSettings.attachSchema(
       autoValue() {
         if (this.isInsert) {
           return new Date();
+        } else if (this.isUpsert) {
+          return { $setOnInsert: new Date() };
         } else {
           this.unset();
         }
@@ -65,6 +67,15 @@ if (Meteor.isServer) {
         $setOnInsert: {
           booleanValue: false,
           sort: 1,
+        },
+      },
+    );
+    AccountSettings.upsert(
+      { _id: 'accounts-allowUserDelete' },
+      {
+        $setOnInsert: {
+          booleanValue: false,
+          sort: 0,
         },
       },
     );

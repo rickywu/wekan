@@ -6,7 +6,7 @@ LABEL maintainer="wekan"
 # ENV BUILD_DEPS="paxctl"
 ENV BUILD_DEPS="apt-utils bsdtar gnupg gosu wget curl bzip2 g++ build-essential git ca-certificates" \
     DEBUG=false \
-    NODE_VERSION=v8.16.0 \
+    NODE_VERSION=v8.16.2 \
     METEOR_RELEASE=1.8.1 \
     USE_EDGE=false \
     METEOR_EDGE=1.5-beta.17 \
@@ -21,9 +21,12 @@ ENV BUILD_DEPS="apt-utils bsdtar gnupg gosu wget curl bzip2 g++ build-essential 
     ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURES_BERORE=3 \
     ACCOUNTS_LOCKOUT_UNKNOWN_USERS_LOCKOUT_PERIOD=60 \
     ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURE_WINDOW=15 \
+    RICHER_CARD_COMMENT_EDITOR=true \
+    CARD_OPENED_WEBHOOK_ENABLED=false \
+    ATTACHMENTS_STORE_PATH="" \
     MAX_IMAGE_PIXEL="" \
     IMAGE_COMPRESS_RATIO="" \
-    BIGEVENTS_PATTERN="" \
+    BIGEVENTS_PATTERN=NONE \
     NOTIFY_DUE_DAYS_BEFORE_AND_AFTER="" \
     NOTIFY_DUE_AT_HOUR_OF_DAY="" \
     EMAIL_NOTIFICATION_TIMEOUT=30000 \
@@ -62,13 +65,14 @@ ENV BUILD_DEPS="apt-utils bsdtar gnupg gosu wget curl bzip2 g++ build-essential 
     LDAP_AUTHENTIFICATION_PASSWORD="" \
     LDAP_LOG_ENABLED=false \
     LDAP_BACKGROUND_SYNC=false \
-    LDAP_BACKGROUND_SYNC_INTERVAL=100 \
+    LDAP_BACKGROUND_SYNC_INTERVAL="" \
     LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED=false \
     LDAP_BACKGROUND_SYNC_IMPORT_NEW_USERS=false \
     LDAP_ENCRYPTION=false \
     LDAP_CA_CERT="" \
     LDAP_REJECT_UNAUTHORIZED=false \
     LDAP_USER_AUTHENTICATION=false \
+    LDAP_USER_AUTHENTICATION_FIELD=uid \
     LDAP_USER_SEARCH_FILTER="" \
     LDAP_USER_SEARCH_SCOPE="" \
     LDAP_USER_SEARCH_FIELD="" \
@@ -174,7 +178,7 @@ RUN \
     mv node-${NODE_VERSION}-${ARCHITECTURE} /opt/nodejs && \
     ln -s /opt/nodejs/bin/node /usr/bin/node && \
     ln -s /opt/nodejs/bin/npm /usr/bin/npm && \
-    mkdir -p /opt/nodejs/lib/node_modules/fibers/.node-gyp /root/.node-gyp/8.16.0 /home/wekan/.config && \
+    mkdir -p /opt/nodejs/lib/node_modules/fibers/.node-gyp /root/.node-gyp/8.16.1 /home/wekan/.config && \
     chown wekan --recursive /home/wekan/.config && \
     \
     #DOES NOT WORK: paxctl fix for alpine linux: https://github.com/wekan/wekan/issues/1303
@@ -255,6 +259,11 @@ RUN \
     #cd /home/wekan/app_build/bundle/programs/server/npm/node_modules/meteor/npm-bcrypt && \
     #gosu wekan:wekan rm -rf node_modules/bcrypt && \
     #gosu wekan:wekan npm install bcrypt && \
+    #
+    # Delete phantomjs
+    #cd /home/wekan/app_build/bundle && \
+    #find . -name "*phantomjs*" | xargs rm -rf && \
+    #
     cd /home/wekan/app_build/bundle/programs/server/ && \
     gosu wekan:wekan npm install && \
     #gosu wekan:wekan npm install bcrypt && \

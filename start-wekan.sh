@@ -37,6 +37,13 @@
       #export ACCOUNTS_LOCKOUT_UNKNOWN_USERS_LOCKOUT_PERIOD=60
       #export ACCOUNTS_LOCKOUT_UNKNOWN_USERS_FAILURE_WINDOW=15
       #---------------------------------------------------------------
+      # ==== RICH TEXT EDITOR IN CARD COMMENTS ====
+      # https://github.com/wekan/wekan/pull/2560
+      export RICHER_CARD_COMMENT_EDITOR=true
+      #---------------------------------------------------------------
+      # ==== CARD OPENED, SEND WEBHOOK MESSAGE ====
+      export CARD_OPENED_WEBHOOK_ENABLED=false
+      #---------------------------------------------------------------
       # ==== Allow to shrink attached/pasted image ====
       # https://github.com/wekan/wekan/pull/2544
       #export MAX_IMAGE_PIXEL=1024
@@ -44,19 +51,19 @@
       #---------------------------------------------------------------
       # ==== BIGEVENTS DUE ETC NOTIFICATIONS =====
       # https://github.com/wekan/wekan/pull/2541
-      # Introduced a system env var BIGEVENTS_PATTERN default as "due",
+      # Introduced a system env var BIGEVENTS_PATTERN default as "NONE",
       # so any activityType matches the pattern, system will send out
       # notifications to all board members no matter they are watching
       # or tracking the board or not. Owner of the wekan server can
       # disable the feature by setting this variable to "NONE" or
       # change the pattern to any valid regex. i.e. '|' delimited
       # activityType names.
-      # a) Default
+      # a) Example
       #export BIGEVENTS_PATTERN=due
       # b) All
       #export BIGEVENTS_PATTERN=received|start|due|end
       # c) Disabled
-      #export BIGEVENTS_PATTERN=NONE
+      export BIGEVENTS_PATTERN=NONE
       #---------------------------------------------------------------
       # ==== EMAIL DUE DATE NOTIFICATION =====
       # https://github.com/wekan/wekan/pull/2536
@@ -64,8 +71,9 @@
       # dueat startat endat receivedat, also notification to
       # the watchers and if any card is due, about due or past due.
       #
-      # Notify due days, default 2 days before and after. 0 = due notifications disabled. Default: 2
-      #export NOTIFY_DUE_DAYS_BEFORE_AND_AFTER=2
+      # Notify due days, default is None. 
+      #export NOTIFY_DUE_DAYS_BEFORE_AND_AFTER=2,0
+      # it will notify user 2 days before due day and on the due day
       #
       # Notify due at hour of day. Default every morning at 8am. Can be 0-23.
       # If env variable has parsing error, use default. Notification sent to watchers.
@@ -211,7 +219,12 @@
       #export LDAP_AUTHENTIFICATION=false
       # LDAP_AUTHENTIFICATION_USERDN : The search user DN
       # example :  export LDAP_AUTHENTIFICATION_USERDN=cn=admin,dc=example,dc=org
-      #export LDAP_AUTHENTIFICATION_USERDN=
+      #----------------------------------------------------------------------------
+      # The search user DN - You need quotes when you have spaces in parameters
+      # 2 examples:
+      #export LDAP_AUTHENTIFICATION_USERDN="CN=ldap admin,CN=users,DC=domainmatter,DC=lan"
+      #export LDAP_AUTHENTIFICATION_USERDN="CN=wekan_adm,OU=serviceaccounts,OU=admin,OU=prod,DC=mydomain,DC=com"
+      #---------------------------------------------------------------------------
       # LDAP_AUTHENTIFICATION_PASSWORD : The password for the search user
       # example : AUTHENTIFICATION_PASSWORD=admin
       #export LDAP_AUTHENTIFICATION_PASSWORD=
@@ -222,8 +235,10 @@
       # example :  export LDAP_BACKGROUND_SYNC=true
       #export LDAP_BACKGROUND_SYNC=false
       # LDAP_BACKGROUND_SYNC_INTERVAL : At which interval does the background task sync in milliseconds
-      # example :  export LDAP_BACKGROUND_SYNC_INTERVAL=12345
-      #export LDAP_BACKGROUND_SYNC_INTERVAL=100
+      # At which interval does the background task sync in milliseconds.
+      # Leave this unset, so it uses default, and does not crash.
+      # https://github.com/wekan/wekan/issues/2354#issuecomment-515305722
+      export LDAP_BACKGROUND_SYNC_INTERVAL=''
       # LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED :
       # example :  export LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED=true
       #export LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED=false
@@ -241,6 +256,8 @@
       #export LDAP_REJECT_UNAUTHORIZED=false
       # Option to login to the LDAP server with the user's own username and password, instead of an administrator key. Default: false (use administrator key).
       #export LDAP_USER_AUTHENTICATION=true
+      # Which field is used to find the user for the user authentication. Default: uid.
+      #export LDAP_USER_AUTHENTICATION_FIELD=uid
       # LDAP_USER_SEARCH_FILTER : Optional extra LDAP filters. Don't forget the outmost enclosing parentheses if needed
       # example :  export LDAP_USER_SEARCH_FILTER=
       #export LDAP_USER_SEARCH_FILTER=

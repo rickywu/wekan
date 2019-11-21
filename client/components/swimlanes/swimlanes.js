@@ -14,7 +14,7 @@ function currentCardIsInThisList(listId, swimlaneId) {
   if (
     currentUser &&
     currentUser.profile &&
-    currentUser.profile.boardView === 'board-view-swimlanes'
+    Utils.boardView() === 'board-view-swimlanes'
   )
     return (
       currentCard &&
@@ -56,7 +56,6 @@ function initSortable(boardComponent, $listsDom) {
   $listsDom.sortable({
     tolerance: 'pointer',
     helper: 'clone',
-    handle: '.js-list-header',
     items: '.js-list:not(.js-list-composer)',
     placeholder: 'list placeholder',
     distance: 7,
@@ -97,15 +96,43 @@ function initSortable(boardComponent, $listsDom) {
     );
   }
 
-  // Disable drag-dropping while in multi-selection mode, or if the current user
-  // is not a board member
   boardComponent.autorun(() => {
+    import { Cookies } from 'meteor/ostrio:cookies';
+    const cookies = new Cookies();
+    let showDesktopDragHandles = false;
+    currentUser = Meteor.user();
+    if (currentUser) {
+      showDesktopDragHandles = (currentUser.profile || {})
+        .showDesktopDragHandles;
+    } else {
+      import { Cookies } from 'meteor/ostrio:cookies';
+      const cookies = new Cookies();
+      if (cookies.has('showDesktopDragHandles')) {
+        showDesktopDragHandles = true;
+      } else {
+        showDesktopDragHandles = false;
+      }
+    }
+
+    if (!Utils.isMiniScreen() && showDesktopDragHandles) {
+      $listsDom.sortable({
+        handle: '.js-list-handle',
+      });
+    } else {
+      $listsDom.sortable({
+        handle: '.js-list-header',
+      });
+    }
+
     const $listDom = $listsDom;
     if ($listDom.data('sortable')) {
       $listsDom.sortable(
         'option',
         'disabled',
-        MultiSelection.isActive() || !userIsMember(),
+        // Disable drag-dropping when user is not member
+        !userIsMember(),
+        // Not disable drag-dropping while in multi-selection mode
+        // MultiSelection.isActive() || !userIsMember(),
       );
     }
   });
@@ -121,6 +148,26 @@ BlazeComponent.extendComponent({
     }
 
     initSortable(boardComponent, $listsDom);
+
+    import { Cookies } from 'meteor/ostrio:cookies';
+    const cookies = new Cookies();
+    if (cookies.has('collapseSwimlane')) {
+      // Minimize swimlanes start https://www.w3schools.com/howto/howto_js_accordion.asp
+      const acc = document.getElementsByClassName('accordion');
+      let i;
+      for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener('click', function() {
+          this.classList.toggle('active');
+          const panel = this.nextElementSibling;
+          if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+          } else {
+            panel.style.maxHeight = `${panel.scrollHeight}px`;
+          }
+        });
+      }
+      // Minimize swimlanes end https://www.w3schools.com/howto/howto_js_accordion.asp
+    }
   },
   onCreated() {
     this.draggingActive = new ReactiveVar(false);
@@ -151,13 +198,31 @@ BlazeComponent.extendComponent({
           // define a list of elements in which we disable the dragging because
           // the user will legitimately expect to be able to select some text with
           // his mouse.
-          const noDragInside = [
-            'a',
-            'input',
-            'textarea',
-            'p',
-            '.js-list-header',
-          ];
+
+          import { Cookies } from 'meteor/ostrio:cookies';
+          const cookies = new Cookies();
+          let showDesktopDragHandles = false;
+          currentUser = Meteor.user();
+          if (currentUser) {
+            showDesktopDragHandles = (currentUser.profile || {})
+              .showDesktopDragHandles;
+          } else {
+            import { Cookies } from 'meteor/ostrio:cookies';
+            const cookies = new Cookies();
+            if (cookies.has('showDesktopDragHandles')) {
+              showDesktopDragHandles = true;
+            } else {
+              showDesktopDragHandles = false;
+            }
+          }
+
+          const noDragInside = ['a', 'input', 'textarea', 'p'].concat(
+            Utils.isMiniScreen() ||
+              (!Utils.isMiniScreen() && showDesktopDragHandles)
+              ? ['.js-list-handle', '.js-swimlane-header-handle']
+              : ['.js-list-header'],
+          );
+
           if (
             $(evt.target).closest(noDragInside.join(',')).length === 0 &&
             this.$('.swimlane').prop('clientHeight') > evt.offsetY
@@ -233,6 +298,20 @@ BlazeComponent.extendComponent({
 }).register('addListForm');
 
 Template.swimlane.helpers({
+  showDesktopDragHandles() {
+    currentUser = Meteor.user();
+    if (currentUser) {
+      return (currentUser.profile || {}).showDesktopDragHandles;
+    } else {
+      import { Cookies } from 'meteor/ostrio:cookies';
+      const cookies = new Cookies();
+      if (cookies.has('showDesktopDragHandles')) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  },
   canSeeAddList() {
     return (
       Meteor.user() &&
@@ -245,6 +324,29 @@ Template.swimlane.helpers({
 BlazeComponent.extendComponent({
   currentCardIsInThisList(listId, swimlaneId) {
     return currentCardIsInThisList(listId, swimlaneId);
+  },
+  visible(list) {
+    if (list.archived) {
+      // Show archived list only when filter archive is on or archive is selected
+      if (!(Filter.archive.isSelected() || archivedRequested)) {
+        return false;
+      }
+    }
+    if (Filter.lists._isActive()) {
+      if (!list.title.match(Filter.lists.getRegexSelector())) {
+        return false;
+      }
+    }
+    if (Filter.hideEmpty.isSelected()) {
+      const swimlaneId = this.parentComponent()
+        .parentComponent()
+        .data()._id;
+      const cards = list.cards(swimlaneId);
+      if (cards.count() === 0) {
+        return false;
+      }
+    }
+    return true;
   },
   onRendered() {
     const boardComponent = this.parentComponent();

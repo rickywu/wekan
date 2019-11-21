@@ -78,6 +78,8 @@ CustomFields.attachSchema(
       autoValue() {
         if (this.isInsert) {
           return new Date();
+        } else if (this.isUpsert) {
+          return { $setOnInsert: new Date() };
         } else {
           this.unset();
         }
@@ -242,8 +244,7 @@ if (Meteor.isServer) {
     req,
     res,
   ) {
-    //wekan修改
-    // Authentication.checkUserId(req.userId);
+    Authentication.checkUserId(req.userId);
     const paramBoardId = req.params.boardId;
     JsonRoutes.sendResult(res, {
       code: 200,
@@ -303,6 +304,7 @@ if (Meteor.isServer) {
   ) {
     Authentication.checkUserId(req.userId);
     const paramBoardId = req.params.boardId;
+    const board = Boards.findOne({ _id: paramBoardId });
     const id = CustomFields.direct.insert({
       name: req.body.name,
       type: req.body.type,
@@ -310,7 +312,7 @@ if (Meteor.isServer) {
       showOnCard: req.body.showOnCard,
       automaticallyOnCard: req.body.automaticallyOnCard,
       showLabelOnMiniCard: req.body.showLabelOnMiniCard,
-      boardIds: { $in: [paramBoardId] },
+      boardIds: [board._id],
     });
 
     const customField = CustomFields.findOne({
@@ -341,8 +343,7 @@ if (Meteor.isServer) {
     'DELETE',
     '/api/boards/:boardId/custom-fields/:customFieldId',
     function(req, res) {
-      //wekan修改
-      // Authentication.checkUserId(req.userId);
+      Authentication.checkUserId(req.userId);
       const paramBoardId = req.params.boardId;
       const id = req.params.customFieldId;
       CustomFields.remove({ _id: id, boardIds: { $in: [paramBoardId] } });

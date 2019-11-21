@@ -7,11 +7,13 @@ BlazeComponent.extendComponent({
     this.accountSetting = new ReactiveVar(false);
     this.announcementSetting = new ReactiveVar(false);
     this.layoutSetting = new ReactiveVar(false);
+    this.webhookSetting = new ReactiveVar(false);
 
     Meteor.subscribe('setting');
     Meteor.subscribe('mailServer');
     Meteor.subscribe('accountSettings');
     Meteor.subscribe('announcements');
+    Meteor.subscribe('globalwebhooks');
   },
 
   setError(error) {
@@ -83,6 +85,7 @@ BlazeComponent.extendComponent({
       this.accountSetting.set('account-setting' === targetID);
       this.announcementSetting.set('announcement-setting' === targetID);
       this.layoutSetting.set('layout-setting' === targetID);
+      this.webhookSetting.set('webhook-setting' === targetID);
     }
   },
 
@@ -233,11 +236,16 @@ BlazeComponent.extendComponent({
       $('input[name=allowEmailChange]:checked').val() === 'true';
     const allowUserNameChange =
       $('input[name=allowUserNameChange]:checked').val() === 'true';
+    const allowUserDelete =
+      $('input[name=allowUserDelete]:checked').val() === 'true';
     AccountSettings.update('accounts-allowEmailChange', {
       $set: { booleanValue: allowEmailChange },
     });
     AccountSettings.update('accounts-allowUserNameChange', {
       $set: { booleanValue: allowUserNameChange },
+    });
+    AccountSettings.update('accounts-allowUserDelete', {
+      $set: { booleanValue: allowUserDelete },
     });
   },
 
@@ -246,6 +254,9 @@ BlazeComponent.extendComponent({
   },
   allowUserNameChange() {
     return AccountSettings.findOne('accounts-allowUserNameChange').booleanValue;
+  },
+  allowUserDelete() {
+    return AccountSettings.findOne('accounts-allowUserDelete').booleanValue;
   },
 
   events() {

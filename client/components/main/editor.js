@@ -1,9 +1,90 @@
+import _sanitizeXss from 'xss';
+const ASIS = 'asis';
+const sanitizeXss = (input, options) => {
+  const defaultAllowedIframeSrc = /^(https:){0,1}\/\/.*?(youtube|vimeo|dailymotion|youku)/i;
+  const allowedIframeSrcRegex = (function() {
+    let reg = defaultAllowedIframeSrc;
+    const SAFE_IFRAME_SRC_PATTERN =
+      Meteor.settings.public.SAFE_IFRAME_SRC_PATTERN;
+    try {
+      if (SAFE_IFRAME_SRC_PATTERN !== undefined) {
+        reg = new RegExp(SAFE_IFRAME_SRC_PATTERN, 'i');
+      }
+    } catch (e) {
+      /*eslint no-console: ["error", { allow: ["warn", "error"] }] */
+
+      console.error('Wrong pattern specified', SAFE_IFRAM_SRC_PATTERN, e);
+    }
+    return reg;
+  })();
+  const targetWindow = '_blank';
+  const getHtmlDOM = html => {
+    const i = document.createElement('i');
+    i.innerHTML = html;
+    return i.firstChild;
+  };
+  options = {
+    onTag(tag, html, options) {
+      const htmlDOM = getHtmlDOM(html);
+      const getAttr = attr => {
+        return htmlDOM && attr && htmlDOM.getAttribute(attr);
+      };
+      if (tag === 'iframe') {
+        const clipCls = 'note-vide-clip';
+        if (!options.isClosing) {
+          const iframeCls = getAttr('class');
+          let safe = iframeCls.indexOf(clipCls) > -1;
+          const src = getAttr('src');
+          if (allowedIframeSrcRegex.exec(src)) {
+            safe = true;
+          }
+          if (safe)
+            return `<iframe src='${src}' class="${clipCls}" width=100% height=auto allowfullscreen></iframe>`;
+        } else {
+          // remove </iframe> tag
+          return '';
+        }
+      } else if (tag === 'a') {
+        if (!options.isClosing) {
+          if (getAttr(ASIS) === 'true') {
+            // if has a ASIS attribute, don't do anything, it's a member id
+            return html;
+          } else {
+            const href = getAttr('href');
+            if (href.match(/^((http(s){0,1}:){0,1}\/\/|\/)/)) {
+              // a valid url
+              return `<a href=${href} target=${targetWindow}>`;
+            }
+          }
+        }
+      } else if (tag === 'img') {
+        if (!options.isClosing) {
+          const src = getAttr('src');
+          if (src) {
+            return `<a href='${src}' class='swipebox'><img src='${src}' class="attachment-image-preview mCS_img_loaded"></a>`;
+          }
+        }
+      }
+      return undefined;
+    },
+    onTagAttr(tag, name, value) {
+      if (tag === 'img' && name === 'src') {
+        if (value && value.substr(0, 5) === 'data:') {
+          // allow image with dataURI src
+          return `${name}='${value}'`;
+        }
+      } else if (tag === 'a' && name === 'target') {
+        return `${name}='${targetWindow}'`; // always change a href target to a new window
+      }
+      return undefined;
+    },
+    ...options,
+  };
+  return _sanitizeXss(input, options);
+};
 Template.editor.onRendered(() => {
-  const $textarea = this.$('textarea');
-
-  autosize($textarea);
-
-  $textarea.escapeableTextComplete([
+  const textareaSelector = 'textarea';
+  const mentions = [
     // User mentions
     {
       match: /\B@([\w.]*)$/,
@@ -13,7 +94,13 @@ Template.editor.onRendered(() => {
           currentBoard
             .activeMembers()
             .map(member => {
-              const username = Users.findOne(member.userId).username;
+              const user = Users.findOne(member.userId);
+              if (user._id === Meteor.userId()) {
+                return null;
+              }
+              const value = user.username;
+              const username =
+                value && value.match(/\s+/) ? `"${value}"` : value;
               return username.includes(term) ? username : null;
             })
             .filter(Boolean),
@@ -27,10 +114,222 @@ Template.editor.onRendered(() => {
       },
       index: 1,
     },
-  ]);
+  ];
+  const enableTextarea = function() {
+    const $textarea = this.$(textareaSelector);
+    autosize($textarea);
+    $textarea.escapeableTextComplete(mentions);
+  };
+  if (Meteor.settings.public.RICHER_CARD_COMMENT_EDITOR !== false) {
+    const isSmall = Utils.isMiniScreen();
+    const toolbar = isSmall
+      ? [
+          ['view', ['fullscreen']],
+          ['table', ['table']],
+          ['font', ['bold']],
+          ['color', ['color']],
+          ['insert', ['video']], // iframe tag will be sanitized TODO if iframe[class=note-video-clip] can be added into safe list, insert video can be enabled
+          //['fontsize', ['fontsize']],
+        ]
+      : [
+          ['style', ['style']],
+          ['font', ['bold', 'underline', 'clear']],
+          ['fontsize', ['fontsize']],
+          ['fontname', ['fontname']],
+          ['color', ['color']],
+          ['para', ['ul', 'ol', 'paragraph']],
+          ['table', ['table']],
+          ['insert', ['link', 'picture', 'video']], // iframe tag will be sanitized TODO if iframe[class=note-video-clip] can be added into safe list, insert video can be enabled
+          //['insert', ['link', 'picture']], // modal popup has issue somehow :(
+          ['view', ['fullscreen', 'help']],
+        ];
+    const cleanPastedHTML = sanitizeXss;
+    const editor = '.editor';
+    const selectors = [
+      `.js-new-comment-form ${editor}`,
+      `.js-edit-comment ${editor}`,
+    ].join(','); // only new comment and edit comment
+    const inputs = $(selectors);
+    if (inputs.length === 0) {
+      // only enable richereditor to new comment or edit comment no others
+      enableTextarea();
+    } else {
+      const placeholder = inputs.attr('placeholder') || '';
+      const mSummernotes = [];
+      const getSummernote = function(input) {
+        const idx = inputs.index(input);
+        if (idx > -1) {
+          return mSummernotes[idx];
+        }
+        return undefined;
+      };
+      let popupShown = false;
+      inputs.each(function(idx, input) {
+        mSummernotes[idx] = $(input).summernote({
+          placeholder,
+          callbacks: {
+            onKeydown(e) {
+              if (popupShown) {
+                e.preventDefault();
+              }
+            },
+            onKeyup(e) {
+              if (popupShown) {
+                e.preventDefault();
+              }
+            },
+            onInit(object) {
+              const originalInput = this;
+              const setAutocomplete = function(jEditor) {
+                if (jEditor !== undefined) {
+                  jEditor.escapeableTextComplete(mentions).on({
+                    'textComplete:show'() {
+                      popupShown = true;
+                    },
+                    'textComplete:hide'() {
+                      popupShown = false;
+                    },
+                  });
+                }
+              };
+              $(originalInput).on('submitted', function() {
+                // resetCommentInput has been called
+                if (!this.value) {
+                  const sn = getSummernote(this);
+                  sn && sn.summernote('code', '');
+                }
+              });
+              const jEditor = object && object.editable;
+              const toolbar = object && object.toolbar;
+              setAutocomplete(jEditor);
+              if (toolbar !== undefined) {
+                const fBtn = toolbar.find('.btn-fullscreen');
+                fBtn.on('click', function() {
+                  const $this = $(this),
+                    isActive = $this.hasClass('active');
+                  $('.minicards,#header-quick-access').toggle(!isActive); // mini card is still showing when editor is in fullscreen mode, we hide here manually
+                });
+              }
+            },
+            onImageUpload(files) {
+              const $summernote = getSummernote(this);
+              if (files && files.length > 0) {
+                const image = files[0];
+                const currentCard = Cards.findOne(Session.get('currentCard'));
+                const MAX_IMAGE_PIXEL = Utils.MAX_IMAGE_PIXEL;
+                const COMPRESS_RATIO = Utils.IMAGE_COMPRESS_RATIO;
+                const insertImage = src => {
+                  const img = document.createElement('img');
+                  img.src = src;
+                  img.setAttribute('width', '100%');
+                  $summernote.summernote('insertNode', img);
+                };
+                const processData = function(fileObj) {
+                  Utils.processUploadedAttachment(
+                    currentCard,
+                    fileObj,
+                    attachment => {
+                      if (
+                        attachment &&
+                        attachment._id &&
+                        attachment.isImage()
+                      ) {
+                        attachment.one('uploaded', function() {
+                          const maxTry = 3;
+                          const checkItvl = 500;
+                          let retry = 0;
+                          const checkUrl = function() {
+                            // even though uploaded event fired, attachment.url() is still null somehow //TODO
+                            const url = attachment.url();
+                            if (url) {
+                              insertImage(
+                                `${location.protocol}//${location.host}${url}`,
+                              );
+                            } else {
+                              retry++;
+                              if (retry < maxTry) {
+                                setTimeout(checkUrl, checkItvl);
+                              }
+                            }
+                          };
+                          checkUrl();
+                        });
+                      }
+                    },
+                  );
+                };
+                if (MAX_IMAGE_PIXEL) {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    const dataurl = e && e.target && e.target.result;
+                    if (dataurl !== undefined) {
+                      // need to shrink image
+                      Utils.shrinkImage({
+                        dataurl,
+                        maxSize: MAX_IMAGE_PIXEL,
+                        ratio: COMPRESS_RATIO,
+                        toBlob: true,
+                        callback(blob) {
+                          if (blob !== false) {
+                            blob.name = image.name;
+                            processData(blob);
+                          }
+                        },
+                      });
+                    }
+                  };
+                  reader.readAsDataURL(image);
+                } else {
+                  processData(image);
+                }
+              }
+            },
+            onPaste() {
+              // clear up unwanted tag info when user pasted in text
+              const thisNote = this;
+              const updatePastedText = function(object) {
+                const someNote = getSummernote(object);
+                const original = someNote.summernote('code');
+                const cleaned = cleanPastedHTML(original); //this is where to call whatever clean function you want. I have mine in a different file, called CleanPastedHTML.
+                someNote.summernote('code', ''); //clear original
+                someNote.summernote('pasteHTML', cleaned); //this sets the displayed content editor to the cleaned pasted code.
+              };
+              setTimeout(function() {
+                //this kinda sucks, but if you don't do a setTimeout,
+                //the function is called before the text is really pasted.
+                updatePastedText(thisNote);
+              }, 10);
+            },
+          },
+          dialogsInBody: true,
+          disableDragAndDrop: true,
+          toolbar,
+          popover: {
+            image: [
+              [
+                'image',
+                ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone'],
+              ],
+              ['float', ['floatLeft', 'floatRight', 'floatNone']],
+              ['remove', ['removeMedia']],
+            ],
+            table: [
+              ['add', ['addRowDown', 'addRowUp', 'addColLeft', 'addColRight']],
+              ['delete', ['deleteRow', 'deleteCol', 'deleteTable']],
+            ],
+            air: [
+              ['color', ['color']],
+              ['font', ['bold', 'underline', 'clear']],
+            ],
+          },
+          height: 200,
+        });
+      });
+    }
+  } else {
+    enableTextarea();
+  }
 });
-
-import sanitizeXss from 'xss';
 
 // XXX I believe we should compute a HTML rendered field on the server that
 // would handle markdown and user mentions. We can simply have two
@@ -53,11 +352,12 @@ Blaze.Template.registerHelper(
       }
       return member;
     });
-    const mentionRegex = /\B@([\w.]*)/gi;
+    const mentionRegex = /\B@(?:(?:"([\w.\s]*)")|([\w.]+))/gi; // including space in username
 
     let currentMention;
     while ((currentMention = mentionRegex.exec(content)) !== null) {
-      const [fullMention, username] = currentMention;
+      const [fullMention, quoteduser, simple] = currentMention;
+      const username = quoteduser || simple;
       const knowedUser = _.findWhere(knowedUsers, { username });
       if (!knowedUser) {
         continue;
@@ -76,38 +376,42 @@ Blaze.Template.registerHelper(
           // `userId` to the popup as usual, and we need to store it in the DOM
           // using a data attribute.
           'data-userId': knowedUser.userId,
+          [ASIS]: 'true',
         },
         linkValue,
       );
 
       content = content.replace(fullMention, Blaze.toHTML(link));
     }
-
     return HTML.Raw(sanitizeXss(content));
   }),
 );
-
 Template.viewer.events({
   // Viewer sometimes have click-able wrapper around them (for instance to edit
   // the corresponding text). Clicking a link shouldn't fire these actions, stop
   // we stop these event at the viewer component level.
   'click a'(event, templateInstance) {
-    event.stopPropagation();
-
-    // XXX We hijack the build-in browser action because we currently don't have
-    // `_blank` attributes in viewer links, and the transformer function is
-    // handled by a third party package that we can't configure easily. Fix that
-    // by using directly `_blank` attribute in the rendered HTML.
-    event.preventDefault();
-
+    let prevent = true;
     const userId = event.currentTarget.dataset.userid;
     if (userId) {
       Popup.open('member').call({ userId }, event, templateInstance);
     } else {
       const href = event.currentTarget.href;
-      if (href) {
+      const child = event.currentTarget.firstElementChild;
+      if (child && child.tagName === 'IMG') {
+        prevent = false;
+      } else if (href) {
         window.open(href, '_blank');
       }
+    }
+    if (prevent) {
+      event.stopPropagation();
+
+      // XXX We hijack the build-in browser action because we currently don't have
+      // `_blank` attributes in viewer links, and the transformer function is
+      // handled by a third party package that we can't configure easily. Fix that
+      // by using directly `_blank` attribute in the rendered HTML.
+      event.preventDefault();
     }
   },
 });

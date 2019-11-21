@@ -2,6 +2,35 @@
 
 global-reset()
 
+*
+  -webkit-box-sizing: unset
+  box-sizing: unset
+
+.note-popover .popover-content .note-color-palette div .note-color-btn, .panel-heading.note-toolbar .note-color-palette div .note-color-btn
+  background: none
+
+a:focus
+  outline: unset
+  outline-offset: unset
+
+a:hover,a:focus
+  color: unset
+  text-decoration: unset
+
+.badge
+  display: unset
+  min-width: unset
+  padding: unset
+  font-size: unset
+  font-weight: unset
+  line-height: unset
+  color: unset
+  text-align: unset
+  white-space: unset
+  vertical-align: unset
+  background-color: unset
+  border-radius: unset
+
 html, body, input, select, textarea, button
   font: 14px Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif
   line-height: 18px
@@ -203,6 +232,7 @@ kbd
   background: darken(white, 2%)
   border-radius: 3px
   border: 1px solid darken(white, 10%)
+  color: unset
   box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.15)
 
 .clear
@@ -348,6 +378,12 @@ a
 
 .viewer
   min-height: 18px
+  display: block
+  word-wrap: break-word
+
+  table
+    word-wrap: normal
+    word-break: normal
 
   ol
     list-style-type: decimal
@@ -394,6 +430,9 @@ a
   .wrapper
     height: 100%
     margin: 0px
+
+  .panel-default
+    width: 83vw
 
 .inline-input
   height: 37px

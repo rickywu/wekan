@@ -13,6 +13,20 @@ BlazeComponent.extendComponent({
     );
   },
 
+  isBoardAdmin() {
+    return Meteor.user().isBoardAdmin();
+  },
+  starred(check = undefined) {
+    const list = Template.currentData();
+    const status = list.isStarred();
+    if (check === undefined) {
+      // just check
+      return status;
+    } else {
+      list.star(!status);
+      return !status;
+    }
+  },
   editTitle(event) {
     event.preventDefault();
     const newTitle = this.childComponents('inlinedForm')[0]
@@ -30,14 +44,16 @@ BlazeComponent.extendComponent({
   },
 
   limitToShowCardsCount() {
-    return Meteor.user().getLimitToShowCardsCount();
+    const currentUser = Meteor.user();
+    if (currentUser) {
+      return Meteor.user().getLimitToShowCardsCount();
+    }
   },
 
   cardsCount() {
     const list = Template.currentData();
     let swimlaneId = '';
-    const boardView = (Meteor.user().profile || {}).boardView;
-    if (boardView === 'board-view-swimlanes')
+    if (Utils.boardView() === 'board-view-swimlanes')
       swimlaneId = this.parentComponent()
         .parentComponent()
         .data()._id;
@@ -61,6 +77,10 @@ BlazeComponent.extendComponent({
   events() {
     return [
       {
+        'click .js-list-star'(event) {
+          event.preventDefault();
+          this.starred(!this.starred());
+        },
         'click .js-open-list-menu': Popup.open('listAction'),
         'click .js-add-card'(event) {
           const listDom = $(event.target).parents(
@@ -79,6 +99,23 @@ BlazeComponent.extendComponent({
     ];
   },
 }).register('listHeader');
+
+Template.listHeader.helpers({
+  showDesktopDragHandles() {
+    currentUser = Meteor.user();
+    if (currentUser) {
+      return (currentUser.profile || {}).showDesktopDragHandles;
+    } else {
+      import { Cookies } from 'meteor/ostrio:cookies';
+      const cookies = new Cookies();
+      if (cookies.has('showDesktopDragHandles')) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  },
+});
 
 Template.listActionPopup.helpers({
   isWipLimitEnabled() {
