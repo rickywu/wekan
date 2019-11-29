@@ -244,7 +244,8 @@ if (Meteor.isServer) {
     req,
     res,
   ) {
-    Authentication.checkUserId(req.userId);
+    //wekan修改
+    // Authentication.checkUserId(req.userId);
     const paramBoardId = req.params.boardId;
     JsonRoutes.sendResult(res, {
       code: 200,
@@ -272,7 +273,8 @@ if (Meteor.isServer) {
     'GET',
     '/api/boards/:boardId/custom-fields/:customFieldId',
     function(req, res) {
-      Authentication.checkUserId(req.userId);
+      //wekan修改
+      // Authentication.checkUserId(req.userId);
       const paramBoardId = req.params.boardId;
       const paramCustomFieldId = req.params.customFieldId;
       JsonRoutes.sendResult(res, {
@@ -343,7 +345,8 @@ if (Meteor.isServer) {
     'DELETE',
     '/api/boards/:boardId/custom-fields/:customFieldId',
     function(req, res) {
-      Authentication.checkUserId(req.userId);
+      //wekan修改
+      //Authentication.checkUserId(req.userId);
       const paramBoardId = req.params.boardId;
       const id = req.params.customFieldId;
       CustomFields.remove({ _id: id, boardIds: { $in: [paramBoardId] } });
